@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1068364460733",
+    "project_id": "campus-sphere-eb856",
+    "storage_bucket": "campus-sphere-eb856.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068364460733:android:d1bc9817229782dafb3dd4",
+        "android_client_info": {
+          "package_name": "com.example.campus_sphere"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1068364460733-v9brqie3js78ncrufe5utk249jp6c07o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgm6GvfKtc39YLn8PWFs846dByXFOiaEk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1068364460733-v9brqie3js78ncrufe5utk249jp6c07o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

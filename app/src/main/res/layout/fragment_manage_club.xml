@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:contentScrim="#FFFFFF"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp">
+
+                <ImageView
+                    android:id="@+id/headerImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:scaleType="centerCrop"
+                    android:background="#DFE6E9"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tap to change cover"
+                    android:textColor="#2D3436"
+                    android:background="#80FFFFFF"
+                    android:padding="4dp"
+                    android:textSize="10sp"
+                    android:layout_alignBottom="@id/headerImage"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="4dp"/>
+
+                <Button
+                    android:id="@+id/editProfileBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Edit Details"
+                    android:textColor="#2D3436"
+                    android:textSize="12sp"
+                    android:background="@drawable/bg_rounded_border"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_below="@id/headerImage"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginEnd="16dp"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/clubIcon"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@android:drawable/sym_def_app_icon"
+                    android:layout_marginTop="110dp"
+                    android:layout_marginStart="16dp"
+                    app:civ_border_width="4dp"
+                    app:civ_border_color="#FFFFFF"/>
+
+            </RelativeLayout>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp"
+            android:background="#FFFFFF">
+
+            <TextView
+                android:id="@+id/clubNameTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loading Club..."
+                android:textColor="#2D3436"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/clubHandle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@handle"
+                android:textColor="#636E72"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/clubBio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bio loading..."
+                android:textColor="#2D3436"
+                android:layout_marginTop="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <TextView
+                    android:id="@+id/joinedCount"
+                    android:text="0 Members"
+                    android:textColor="#2D3436"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/clubTabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            app:tabTextColor="#636E72"
+            app:tabSelectedTextColor="#0984E3"
+            app:tabIndicatorColor="#0984E3">
+            <com.google.android.material.tabs.TabItem android:text="Events"/>
+            <com.google.android.material.tabs.TabItem android:text="Media"/>
+            <com.google.android.material.tabs.TabItem android:text="Members"/>
+        </com.google.android.material.tabs.TabLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/clubContentRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#FFFFFF"/>
+
+        <TextView
+            android:id="@+id/emptyStateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No members yet"
+            android:textSize="18sp"
+            android:textColor="#B2BEC3"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
