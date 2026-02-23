@@ -3,6 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -12,10 +22,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Campus_Sphere">
+        android:theme="@style/Theme.Campus_Sphere"
+        android:requestLegacyExternalStorage="true">
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,19 +34,37 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
         <activity android:name=".SignupActivity" />
         <activity android:name=".OtpVerificationActivity" />
 
         <activity android:name=".UserDetailsActivity" />
+        <activity android:name=".ForgotPasswordActivity" />
+
+        <activity android:name=".AdminActivity" />
         <activity android:name=".AdminDashboardActivity" />
-        <activity android:name=".LeaderDashboardActivity" />
+        <activity android:name=".AdminUsersActivity" />
+        <activity android:name=".AdminEventsActivity" />
+        <activity android:name=".AdminPaymentsActivity" />
+        <activity android:name=".AdminCreateClubActivity" />
         <activity android:name=".ChangePasswordActivity" />
         <activity android:name=".ChatBotActivity"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ProfileActivity" />
+        <activity android:name=".LeaderActivity" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".RegisteredStudentsActivity" />
+        <activity android:name=".EventDetailsActivity" />
+        <activity android:name=".ClubDetailsActivity" />
+        <activity android:name=".EditEventActivity" />
+        <activity android:name=".PaymentMethodActivity" />
+        <activity android:name=".ListSectionActivity" />
 
-        <activity android:name=".LeaderActivity" />        <activity android:name=".MainActivity" />
-
+        <meta-data
+            android:name="com.razorpay.ApiKey"
+            android:value="rzp_test_SDLFLNOhfC94jR"/>
     </application>
 
 </manifest>

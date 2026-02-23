@@ -1,6 +1,8 @@
 package com.example.campus_sphere;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,6 +33,7 @@ public class LeaderHomeFragment extends Fragment {
     private List<Event> eventList;
     private FirebaseFirestore db;
     private String currentUid;
+    private ActivityResultLauncher<Intent> editLauncher;
 
     @Nullable
     @Override
@@ -43,6 +48,14 @@ public class LeaderHomeFragment extends Fragment {
         membersCount = view.findViewById(R.id.membersCount);
         recyclerView = view.findViewById(R.id.leaderEventsRecycler);
 
+        editLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        fetchMyEvents();
+                    }
+                });
+
         // 2. Setup RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         eventList = new ArrayList<>();
@@ -51,7 +64,9 @@ public class LeaderHomeFragment extends Fragment {
         adapter = new LeaderEventAdapter(eventList, new LeaderEventAdapter.OnEventActionListener() {
             @Override
             public void onEdit(Event event) {
-                Toast.makeText(getContext(), "Edit feature coming soon for: " + event.getTitle(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), EditEventActivity.class);
+                intent.putExtra("event_data", event);
+                editLauncher.launch(intent);
             }
 
             @Override

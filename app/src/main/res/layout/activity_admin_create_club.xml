@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F6F7FB"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Club"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1F2937"
+            android:layout_marginBottom="12dp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <ImageView
+                android:id="@+id/clubHeaderPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:contentDescription="@string/app_name" />
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/clubHeaderBtn"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="Upload Background Image"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="#0B3D91"
+            android:textColor="#FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/clubLogoPreview"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@android:drawable/sym_def_app_icon"
+                app:civ_border_width="2dp"
+                app:civ_border_color="#0B3D91" />
+
+            <Button
+                android:id="@+id/clubLogoBtn"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Upload Club Icon"
+                android:backgroundTint="#00B894"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/clubLeaderEmail"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Leader Email"
+            android:inputType="textEmailAddress"
+            android:paddingHorizontal="12dp" />
+
+        <EditText
+            android:id="@+id/clubNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Club Name"
+            android:paddingHorizontal="12dp" />
+
+        <EditText
+            android:id="@+id/clubHandleInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Club Handle (without @)"
+            android:paddingHorizontal="12dp" />
+
+        <EditText
+            android:id="@+id/clubBioInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Club Bio"
+            android:minHeight="120dp"
+            android:gravity="top|start"
+            android:padding="12dp" />
+
+        <Button
+            android:id="@+id/createClubBtn"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:text="Create Club"
+            android:textStyle="bold"
+            android:backgroundTint="#0B3D91"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</ScrollView>

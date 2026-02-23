@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Please complete your academic details"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textColor="#636E72"
             android:layout_marginBottom="24dp"/>
 
@@ -74,145 +74,42 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Full Name"
-                    android:textStyle="bold"
-                    android:textColor="#2D3436"
-                    android:layout_marginBottom="8dp"/>
-                <EditText
-                    android:id="@+id/name"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:hint="e.g. Aman Yadav"
-                    android:textColor="#000000"
-                    android:textColorHint="#808080"
-                    android:background="@drawable/bg_input_field"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:inputType="textPersonName"
-                    android:layout_marginBottom="16dp"/>
+                <!-- Basic Info -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Full Name" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/name" android:layout_width="match_parent" android:layout_height="50dp" android:hint="e.g. Aman Yadav" android:textColor="#000000" android:textColorHint="#808080" android:background="@drawable/bg_input_field" android:paddingStart="16dp" android:paddingEnd="16dp" android:inputType="textPersonName" android:layout_marginBottom="16dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Gender"
-                    android:textStyle="bold"
-                    android:textColor="#2D3436"
-                    android:layout_marginBottom="8dp"/>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_input_field"
-                    android:layout_marginBottom="16dp">
-                    <Spinner
-                        android:id="@+id/genderSpinner"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:spinnerMode="dropdown"/>
-                </FrameLayout>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/email" android:layout_width="match_parent" android:layout_height="50dp" android:hint="e.g. aman@example.com" android:textColor="#000000" android:textColorHint="#808080" android:background="@drawable/bg_input_field" android:paddingStart="16dp" android:paddingEnd="16dp" android:inputType="textEmailAddress" android:layout_marginBottom="16dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Enrollment Number"
-                    android:textStyle="bold"
-                    android:textColor="#2D3436"
-                    android:layout_marginBottom="8dp"/>
-                <EditText
-                    android:id="@+id/enrollment"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:hint="e.g. 0827..."
-                    android:textColor="#000000"
-                    android:textColorHint="#808080"
-                    android:background="@drawable/bg_input_field"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:inputType="text"
-                    android:layout_marginBottom="16dp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mobile Number" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/mobile" android:layout_width="match_parent" android:layout_height="50dp" android:hint="e.g. +91 9876543210" android:textColor="#000000" android:textColorHint="#808080" android:background="@drawable/bg_input_field" android:paddingStart="16dp" android:paddingEnd="16dp" android:inputType="phone" android:layout_marginBottom="16dp"/>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:baselineAligned="false">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bio" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/bio" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="80dp" android:hint="Write a short bio about yourself..." android:textColor="#000000" android:textColorHint="#808080" android:background="@drawable/bg_input_field" android:padding="16dp" android:gravity="top|start" android:inputType="textMultiLine" android:layout_marginBottom="16dp"/>
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="8dp">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Branch"
-                            android:textStyle="bold"
-                            android:textColor="#2D3436"
-                            android:layout_marginBottom="8dp"/>
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="50dp"
-                            android:background="@drawable/bg_input_field">
-                            <Spinner
-                                android:id="@+id/branchSpinner"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@null"
-                                android:spinnerMode="dropdown"/>
+                <!-- Academic Info -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Enrollment Number" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/enrollment" android:layout_width="match_parent" android:layout_height="50dp" android:hint="e.g. 0827..." android:textColor="#000000" android:textColorHint="#808080" android:background="@drawable/bg_input_field" android:paddingStart="16dp" android:paddingEnd="16dp" android:inputType="text" android:layout_marginBottom="16dp"/>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:baselineAligned="false" android:layout_marginBottom="16dp">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="8dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Branch" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                        <FrameLayout android:layout_width="match_parent" android:layout_height="50dp" android:background="@drawable/bg_input_field">
+                            <Spinner android:id="@+id/branchSpinner" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@null" android:spinnerMode="dropdown"/>
                         </FrameLayout>
                     </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="8dp">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Section"
-                            android:textStyle="bold"
-                            android:textColor="#2D3436"
-                            android:layout_marginBottom="8dp"/>
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="50dp"
-                            android:background="@drawable/bg_input_field">
-                            <Spinner
-                                android:id="@+id/sectionSpinner"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:background="@null"
-                                android:spinnerMode="dropdown"/>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="8dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Year" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                        <FrameLayout android:layout_width="match_parent" android:layout_height="50dp" android:background="@drawable/bg_input_field">
+                            <Spinner android:id="@+id/yearSpinner" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@null" android:spinnerMode="dropdown"/>
                         </FrameLayout>
                     </LinearLayout>
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Area of Interest"
-                    android:textStyle="bold"
-                    android:textColor="#2D3436"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"/>
-                <EditText
-                    android:id="@+id/interest"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:hint="e.g. Artificial Intelligence"
-                    android:textColor="#000000"
-                    android:textColorHint="#808080"
-                    android:background="@drawable/bg_input_field"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:inputType="text"
-                    android:layout_marginBottom="24dp"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Area of Interest" android:textStyle="bold" android:textColor="#2D3436" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/interest" android:layout_width="match_parent" android:layout_height="50dp" android:hint="e.g. Artificial Intelligence" android:textColor="#000000" android:textColorHint="#808080" android:background="@drawable/bg_input_field" android:paddingStart="16dp" android:paddingEnd="16dp" android:inputType="text" android:layout_marginBottom="24dp"/>
+
+
 
                 <Button
                     android:id="@+id/submitBtn"

@@ -1,14 +1,17 @@
 package com.example.campus_sphere;
 
-public class Event {
+import java.io.Serializable; // ✅ Required for Intent passing
+
+public class Event implements Serializable { // ✅ Implements Serializable
+
     private String eventId;
     private String title;
     private String description;
-    private String category;    // New
-    private String price;       // New (e.g., "Free" or "₹500")
-    private String venue;       // New
-    private String date;        // New
-    private String time;        // New
+    private String category;
+    private String price;
+    private String venue;
+    private String date;
+    private String time;
     private String imageUrl;
     private String creatorId;
     private boolean attendanceEnabled;
@@ -41,4 +44,19 @@ public class Event {
     public String getImageUrl() { return imageUrl; }
     public String getCreatorId() { return creatorId; }
     public boolean isAttendanceEnabled() { return attendanceEnabled; }
+
+    // ✅ NEW HELPER: Converts "₹500" to 50000 (paise) for Razorpay
+    public long getAmountInPaise() {
+        if (price == null || price.toLowerCase().contains("free")) {
+            return 0;
+        }
+        try {
+            // Remove everything except numbers
+            String cleanPrice = price.replaceAll("[^\\d]", "");
+            if (cleanPrice.isEmpty()) return 0;
+            return Long.parseLong(cleanPrice) * 100; // Convert Rupees to Paise
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 }

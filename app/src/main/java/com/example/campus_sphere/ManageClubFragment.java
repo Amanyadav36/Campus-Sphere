@@ -47,6 +47,8 @@ public class ManageClubFragment extends Fragment {
     private ImageView headerImage;
     private CircleImageView clubIcon;
     private Button editProfileBtn;
+    private Button joinClubBtn;
+    private TextView coverHint;
     private RecyclerView recyclerView;
     private TabLayout tabLayout;
 
@@ -57,14 +59,32 @@ public class ManageClubFragment extends Fragment {
 
     // Adapters
     private EventAdapter eventAdapter;
-    private MemberAdapter memberAdapter;
+    private StudentAdapter memberAdapter;
     private List<Event> eventList;
-    private List<String> memberList;
+    private List<User> memberList;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_manage_club, container, false);
+
+        // --- ✅ FIX: SAFELY INITIALIZE CLOUDINARY HERE ---
+        // This prevents the crash when running inside LeaderActivity
+        try {
+            MediaManager.get();
+        } catch (IllegalStateException e) {
+            try {
+                Map<String, Object> config = new HashMap<>();
+                config.put("cloud_name", "dpadbarxt");
+                config.put("secure", true);
+                if (getContext() != null) {
+                    MediaManager.init(getContext().getApplicationContext(), config);
+                }
+            } catch (Exception ex) {
+                // Ignore
+            }
+        }
+        // -------------------------------------------------
 
         // 1. Initialize
         db = FirebaseFirestore.getInstance();
@@ -77,6 +97,8 @@ public class ManageClubFragment extends Fragment {
         headerImage = view.findViewById(R.id.headerImage);
         clubIcon = view.findViewById(R.id.clubIcon);
         editProfileBtn = view.findViewById(R.id.editProfileBtn);
+        joinClubBtn = view.findViewById(R.id.joinClubBtn);
+        coverHint = view.findViewById(R.id.coverHint);
         recyclerView = view.findViewById(R.id.clubContentRecycler);
         tabLayout = view.findViewById(R.id.clubTabLayout);
         emptyStateText = view.findViewById(R.id.emptyStateText);
@@ -115,6 +137,8 @@ public class ManageClubFragment extends Fragment {
         });
 
         editProfileBtn.setOnClickListener(v -> showEditDialog());
+        joinClubBtn.setVisibility(View.GONE);
+        coverHint.setVisibility(View.VISIBLE);
 
         // 5. Tab Logic
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -138,6 +162,8 @@ public class ManageClubFragment extends Fragment {
     }
 
     private void loadClubData() {
+        if (getContext() == null) return; // Safety check
+
         db.collection("users").document(currentUid).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
@@ -147,7 +173,7 @@ public class ManageClubFragment extends Fragment {
 
                         // FETCHING SEPARATE IMAGES
                         String headerUrl = document.getString("headerImage");
-                        String logoUrl = document.getString("clubLogo"); // ✅ Uses 'clubLogo', not 'profileImage'
+                        String logoUrl = document.getString("clubLogo");
 
                         if (name != null) clubNameTitle.setText(name);
                         if (handle != null) clubHandle.setText("@" + handle);
@@ -162,8 +188,24 @@ public class ManageClubFragment extends Fragment {
                                 Glide.with(this).load(logoUrl).into(clubIcon);
                             }
                         }
+
+                        ensureLeaderMembership(document);
                     }
                 });
+    }
+
+    private void ensureLeaderMembership(DocumentSnapshot leaderDoc) {
+        Map<String, Object> member = new HashMap<>();
+        member.put("clubId", currentUid);
+        member.put("userId", currentUid);
+        member.put("userName", leaderDoc.getString("name"));
+        member.put("profileImage", leaderDoc.getString("profileImage"));
+        member.put("branch", leaderDoc.getString("branch"));
+        member.put("enrollment", leaderDoc.getString("enrollment"));
+
+        db.collection("club_members")
+                .document(currentUid + "_" + currentUid)
+                .set(member);
     }
 
     private void updateImageInFirestore(String url) {
@@ -174,15 +216,18 @@ public class ManageClubFragment extends Fragment {
                 .addOnSuccessListener(aVoid -> {
                     loadClubData(); // Refresh UI
                     String msg = isUploadingHeader ? "Header Updated" : "Club Logo Updated";
-                    Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    if (getContext() != null) Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Update Failed", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    if (getContext() != null) Toast.makeText(getContext(), "Update Failed", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void uploadToCloudinary(Uri uri) {
-        Toast.makeText(getContext(), "Uploading...", Toast.LENGTH_SHORT).show();
+        if (getContext() != null) Toast.makeText(getContext(), "Uploading...", Toast.LENGTH_SHORT).show();
+
         MediaManager.get().upload(uri)
-                .unsigned("campus_sphere_preset") // 🔴 Ensure this preset exists in Cloudinary
+                .unsigned("campus_sphere_preset")
                 .callback(new UploadCallback() {
                     @Override public void onStart(String requestId) {}
                     @Override public void onProgress(String requestId, long bytes, long totalBytes) {}
@@ -191,7 +236,7 @@ public class ManageClubFragment extends Fragment {
                         updateImageInFirestore(url);
                     }
                     @Override public void onError(String requestId, ErrorInfo errorInfo) {
-                        Toast.makeText(getContext(), "Upload Error: " + errorInfo.getDescription(), Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) Toast.makeText(getContext(), "Upload Error: " + errorInfo.getDescription(), Toast.LENGTH_SHORT).show();
                     }
                     @Override public void onReschedule(String requestId, ErrorInfo errorInfo) {}
                 }).dispatch();
@@ -241,8 +286,17 @@ public class ManageClubFragment extends Fragment {
     private void loadMyEvents() {
         emptyStateText.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
+
         eventList = new ArrayList<>();
-        eventAdapter = new EventAdapter(eventList);
+
+        // ✅ FIX: Pass the Click Listener to the Adapter
+        eventAdapter = new EventAdapter(eventList, event -> {
+            // When a leader clicks their own event, open the details page
+            Intent intent = new Intent(getContext(), EventDetailsActivity.class);
+            intent.putExtra("event_data", event);
+            startActivity(intent);
+        });
+
         recyclerView.setAdapter(eventAdapter);
 
         db.collection("events").whereEqualTo("creatorId", currentUid).get()
@@ -253,6 +307,10 @@ public class ManageClubFragment extends Fragment {
                             eventList.add(doc.toObject(Event.class));
                         }
                         eventAdapter.notifyDataSetChanged();
+                    } else {
+                        // Handle empty state if needed
+                        recyclerView.setVisibility(View.GONE);
+                        emptyStateText.setVisibility(View.VISIBLE);
                     }
                 });
     }
@@ -260,49 +318,44 @@ public class ManageClubFragment extends Fragment {
     private void loadMembers() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         memberList = new ArrayList<>();
-        memberAdapter = new MemberAdapter(memberList);
+        memberAdapter = new StudentAdapter(memberList);
         recyclerView.setAdapter(memberAdapter);
 
-        db.collection("club_members").whereEqualTo("clubId", currentUid).get()
-                .addOnSuccessListener(querySnapshot -> {
-                    memberList.clear();
-                    if (querySnapshot.isEmpty()) {
-                        recyclerView.setVisibility(View.GONE);
-                        emptyStateText.setVisibility(View.VISIBLE);
-                    } else {
-                        recyclerView.setVisibility(View.VISIBLE);
-                        emptyStateText.setVisibility(View.GONE);
-                        for (DocumentSnapshot doc : querySnapshot) {
-                            String name = doc.getString("userName");
-                            if (name != null) memberList.add(name);
-                        }
-                        memberAdapter.notifyDataSetChanged();
-                        joinedCount.setText(memberList.size() + " Members");
+        db.collection("users").document(currentUid).get()
+                .addOnSuccessListener(leaderDoc -> {
+                    if (leaderDoc.exists()) {
+                        User leader = new User(
+                                leaderDoc.getString("name"),
+                                leaderDoc.getString("branch"),
+                                leaderDoc.getString("enrollment"),
+                                leaderDoc.getString("profileImage")
+                        );
+                        memberList.add(leader);
                     }
+                    db.collection("club_members").whereEqualTo("clubId", currentUid).get()
+                            .addOnSuccessListener(querySnapshot -> {
+                                for (DocumentSnapshot doc : querySnapshot) {
+                                    String userId = doc.getString("userId");
+                                    if (currentUid.equals(userId)) continue;
+                                    User user = new User(
+                                            doc.getString("userName"),
+                                            doc.getString("branch"),
+                                            doc.getString("enrollment"),
+                                            doc.getString("profileImage")
+                                    );
+                                    memberList.add(user);
+                                }
+
+                                if (memberList.isEmpty()) {
+                                    recyclerView.setVisibility(View.GONE);
+                                    emptyStateText.setVisibility(View.VISIBLE);
+                                } else {
+                                    recyclerView.setVisibility(View.VISIBLE);
+                                    emptyStateText.setVisibility(View.GONE);
+                                }
+                                memberAdapter.notifyDataSetChanged();
+                                joinedCount.setText(memberList.size() + " Members");
+                            });
                 });
-    }
-
-    // --- Simple Member Adapter Class ---
-    private class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder> {
-        private List<String> names;
-        public MemberAdapter(List<String> names) { this.names = names; }
-
-        @NonNull @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            TextView tv = new TextView(parent.getContext());
-            tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            tv.setPadding(32, 32, 32, 32);
-            tv.setTextSize(16f);
-            tv.setTextColor(android.graphics.Color.BLACK);
-            return new ViewHolder(tv);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            ((TextView) holder.itemView).setText((position + 1) + ". " + names.get(position));
-        }
-
-        @Override public int getItemCount() { return names.size(); }
-        class ViewHolder extends RecyclerView.ViewHolder { public ViewHolder(View v) { super(v); } }
     }
 }

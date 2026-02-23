@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/memberImage"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@android:drawable/sym_def_app_icon" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/memberName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Member"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#2D3436" />
+
+            <TextView
+                android:id="@+id/memberDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Branch • Enrollment"
+                android:textSize="12sp"
+                android:textColor="#636E72"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/promoteBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Promote"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#0984E3" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

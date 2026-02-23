@@ -6,18 +6,24 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide; // Make sure Glide is imported
+import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
     private List<Event> eventList;
+    private OnEventClickListener listener;
 
-    public EventAdapter(List<Event> eventList) {
+    // Interface to communicate with Activity
+    public interface OnEventClickListener {
+        void onRegisterClick(Event event);
+    }
+
+    public EventAdapter(List<Event> eventList, OnEventClickListener listener) {
         this.eventList = eventList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -30,26 +36,60 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventList.get(position);
+        
         holder.title.setText(event.getTitle());
+        String cat = event.getCategory() != null ? event.getCategory() : "Campus Event";
+        String ven = event.getVenue() != null ? event.getVenue() : "TBA";
+        holder.desc.setText(cat + " • " + ven);
 
-        // Combine Date and Time
-        String dateTime = event.getDate() + " • " + event.getTime();
-        holder.desc.setText(dateTime + "\n📍 " + event.getVenue());
+        if (event.getCreatorId() != null && !event.getCreatorId().isEmpty()) {
+            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    .collection("users").document(event.getCreatorId()).get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            String clubName = doc.getString("clubName");
+                            if (clubName == null || clubName.isEmpty()) clubName = doc.getString("name");
+                            if (clubName != null && !clubName.isEmpty()) {
+                                holder.desc.setText(clubName + " • " + ven);
+                            }
+                        }
+                    });
+        }
 
-        // Show Category/Club Name
-        holder.clubName.setText(event.getCategory());
+        String dt = (event.getDate() != null ? event.getDate() : "") + " " + (event.getTime() != null ? event.getTime() : "");
+        if (holder.date != null) {
+            holder.date.setText(dt.trim());
+        }
+
+        if (holder.price != null) {
+            if (event.getAmountInPaise() > 0) {
+                holder.price.setText("Starts at " + event.getPrice());
+            } else {
+                holder.price.setText("Free Entry");
+            }
+        }
+
+        if (holder.btnBookmark != null) {
+            holder.btnBookmark.setOnClickListener(v -> {
+                android.widget.Toast.makeText(holder.itemView.getContext(), "Event Bookmarked", android.widget.Toast.LENGTH_SHORT).show();
+                holder.btnBookmark.setColorFilter(android.graphics.Color.WHITE);
+                holder.btnBookmark.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#6C5CE7")));
+            });
+        }
 
         if (event.getImageUrl() != null && !event.getImageUrl().isEmpty()) {
             Glide.with(holder.itemView.getContext())
                     .load(event.getImageUrl())
-                    .placeholder(android.R.drawable.ic_menu_gallery)
                     .centerCrop()
+                    .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(holder.eventImage);
         }
 
-        holder.registerBtn.setOnClickListener(v ->
-                Toast.makeText(v.getContext(), "Registered for " + event.getTitle(), Toast.LENGTH_SHORT).show()
-        );
+        holder.registerBtn.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onRegisterClick(event);
+            }
+        });
     }
 
     @Override
@@ -58,17 +98,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     public static class EventViewHolder extends RecyclerView.ViewHolder {
-        TextView title, clubName, desc;
+        TextView title, desc, price, date;
         Button registerBtn;
-        ImageView eventImage; // Added Image View
+        ImageView eventImage, btnBookmark;
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.eventTitle);
-            clubName = itemView.findViewById(R.id.clubName);
             desc = itemView.findViewById(R.id.eventDesc);
-            registerBtn = itemView.findViewById(R.id.registerBtn);
-            eventImage = itemView.findViewById(R.id.eventImage); // Ensure this ID exists in event.xml
+            date = itemView.findViewById(R.id.eventDate);
+            price = itemView.findViewById(R.id.eventPrice);
+            btnBookmark = itemView.findViewById(R.id.btnBookmark);
+            
+            // Details Btn mapped to Register Now
+            registerBtn = itemView.findViewById(R.id.detailsBtn);
+            eventImage = itemView.findViewById(R.id.eventImage);
         }
     }
 }

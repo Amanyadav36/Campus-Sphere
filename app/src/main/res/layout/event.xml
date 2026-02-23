@@ -3,78 +3,126 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:elevation="4dp"
-    app:cardCornerRadius="12dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="10dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/eventImage"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery" />
+            android:layout_height="220dp">
+
+            <ImageView
+                android:id="@+id/eventImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery" />
+
+            <!-- Price/Offer tag overlay exactly like Zomato UI -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="#846CE7"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:gravity="center_vertical">
+                
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@android:drawable/ic_menu_info_details"
+                    app:tint="#FFFFFF"/>
+                    
+                <TextView
+                    android:id="@+id/eventPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Starts at ₹ 500"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:layout_marginStart="6dp"/>
+            </LinearLayout>
+            
+            <ImageView
+                android:id="@+id/btnBookmark"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_margin="12dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_rounded_border"
+                android:backgroundTint="#80000000"
+                android:src="@android:drawable/ic_input_add"
+                app:tint="#FFFFFF"
+                android:contentDescription="Bookmark" />
+                
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="16dp"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/clubName"
+                android:id="@+id/eventDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Coding Club"
-                android:textColor="#636E72"
+                android:text="Sat, 21 Feb – Sun, 22 Feb"
+                android:textColor="#C79F22"
                 android:textSize="12sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:letterSpacing="0.02"/>
 
             <TextView
                 android:id="@+id/eventTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hackathon 2026"
+                android:text="The Grand Hackathon 2026"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#000000"
-                android:layout_marginTop="4dp"/>
+                android:textColor="#1D1D1D"
+                android:layout_marginTop="4dp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
 
             <TextView
                 android:id="@+id/eventDesc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Join us for a 24-hour coding sprint..."
-                android:maxLines="2"
+                android:text="Coding Club • CS Auditorium"
+                android:maxLines="1"
                 android:ellipsize="end"
-                android:layout_marginTop="4dp"/>
+                android:textSize="13sp"
+                android:textColor="#636E72"
+                android:layout_marginTop="2dp"/>
 
-            <LinearLayout
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/detailsBtn"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:gravity="end">
-
-                <ImageButton
-                    android:id="@+id/bookmarkBtn"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@android:drawable/star_off"
-                    android:background="?attr/selectableItemBackgroundBorderless"/>
-
-                <Button
-                    android:id="@+id/registerBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Register"
-                    android:backgroundTint="#00B894"
-                    android:textColor="#FFFFFF"/>
-            </LinearLayout>
+                android:layout_height="45dp"
+                android:text="Register Now"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.01"
+                android:backgroundTint="#F3F0FF"
+                android:textColor="#6C5CE7"
+                app:cornerRadius="8dp"
+                app:elevation="0dp"
+                android:layout_marginTop="16dp"/>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

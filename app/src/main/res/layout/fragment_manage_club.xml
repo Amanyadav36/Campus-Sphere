@@ -33,6 +33,7 @@
                     android:background="#DFE6E9"/>
 
                 <TextView
+                    android:id="@+id/coverHint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tap to change cover"
@@ -57,6 +58,20 @@
                     android:layout_alignParentEnd="true"
                     android:layout_marginTop="12dp"
                     android:layout_marginEnd="16dp"/>
+
+                <Button
+                    android:id="@+id/joinClubBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Join"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:backgroundTint="#0984E3"
+                    android:layout_below="@id/headerImage"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginEnd="16dp"
+                    android:visibility="gone"/>
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/clubIcon"
@@ -129,8 +144,8 @@
             app:tabSelectedTextColor="#0984E3"
             app:tabIndicatorColor="#0984E3">
             <com.google.android.material.tabs.TabItem android:text="Events"/>
-            <com.google.android.material.tabs.TabItem android:text="Media"/>
             <com.google.android.material.tabs.TabItem android:text="Members"/>
+            <com.google.android.material.tabs.TabItem android:text="Management"/>
         </com.google.android.material.tabs.TabLayout>
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -2,10 +2,22 @@ package com.example.campus_sphere;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+// Cloudinary
+import com.cloudinary.android.MediaManager;
+
+// Razorpay
+import com.razorpay.Checkout;
+
+// UI & Firebase
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,9 +26,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Links to the layout with BottomNav
+        setContentView(R.layout.activity_main);
 
-        // 1. Safety Check: Force Login if user is null
+        // --- 1. RAZORPAY OPTIMIZATION (New) ---
+        // Pre-loading makes the payment window open much faster later.
+        Checkout.preload(getApplicationContext());
+        // --------------------------------------
+
+        // --- 2. CLOUDINARY SAFE INIT ---
+        try {
+            Map<String, Object> config = new HashMap<>();
+            config.put("cloud_name", "dpadbarxt");
+            config.put("secure", true);
+            MediaManager.init(getApplicationContext(), config);
+        } catch (IllegalStateException e) {
+            Log.d("Cloudinary", "Already initialized");
+        }
+
+        // --- 3. AUTH GUARD ---
         auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() == null) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -24,19 +51,19 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // 2. Setup Navigation
+        // --- 4. NAVIGATION SETUP ---
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(navListener);
 
-        // 3. Load HomeFragment by default
+        // Load HomeFragment by default
         if (savedInstanceState == null) {
+            DatabaseSeeder.seedData(this);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
         }
     }
 
-    // 4. The Switch Logic
     private final BottomNavigationView.OnItemSelectedListener navListener = item -> {
         Fragment selectedFragment = null;
         int itemId = item.getItemId();
@@ -46,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         } else if (itemId == R.id.nav_clubs) {
             selectedFragment = new ClubListFragment();
         } else if (itemId == R.id.nav_profile) {
-            selectedFragment = new ProfileFragment(); // Your logout logic goes HERE now
+            selectedFragment = new ProfileFragment();
         }
 
         if (selectedFragment != null) {

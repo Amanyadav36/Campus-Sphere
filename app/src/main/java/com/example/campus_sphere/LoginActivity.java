@@ -224,7 +224,7 @@ public class LoginActivity extends AppCompatActivity {
         if (role == null) role = "user";
 
         if ("admin".equals(role)) {
-            intent = new Intent(LoginActivity.this, AdminDashboardActivity.class);
+            intent = new Intent(LoginActivity.this, AdminActivity.class);
         } else if ("leader".equals(role)) {
             intent = new Intent(LoginActivity.this, LeaderActivity.class);
         } else {

@@ -3,46 +3,41 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="4dp">
+    android:padding="8dp">
 
     <LinearLayout
         android:id="@+id/left_chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_gravity="start"
-        android:visibility="visible">
+        android:background="#E0E0E0"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/left_chat_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bot Message"
-            android:background="#E1E1E1"
             android:textColor="#000000"
-            android:padding="12dp"
-            android:maxWidth="260dp"
-            android:backgroundTint="#E1E1E1"
-            android:drawablePadding="8dp"/>
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/right_chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_gravity="end"
+        android:background="#0984E3"
+        android:orientation="vertical"
+        android:padding="10dp"
         android:visibility="gone">
 
         <TextView
             android:id="@+id/right_chat_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User Message"
-            android:background="#0984E3"
             android:textColor="#FFFFFF"
-            android:padding="12dp"
-            android:maxWidth="260dp"/>
+            android:textSize="16sp" />
     </LinearLayout>
-
 </LinearLayout>

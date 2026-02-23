@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:padding="20dp"
+        android:elevation="4dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Explore Clubs"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#2D3436"/>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/clubTabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:tabTextColor="#636E72"
+            app:tabSelectedTextColor="#0984E3"
+            app:tabIndicatorColor="#0984E3">
+            <com.google.android.material.tabs.TabItem android:text="My Clubs"/>
+            <com.google.android.material.tabs.TabItem android:text="Other Clubs"/>
+        </com.google.android.material.tabs.TabLayout>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/clubsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp"
+        android:clipToPadding="false"/>
+
+    <TextView
+        android:id="@+id/emptyStateText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="No clubs available."
+        android:textSize="18sp"
+        android:textColor="#636E72"
+        android:visibility="gone"/>
+
+</LinearLayout>
