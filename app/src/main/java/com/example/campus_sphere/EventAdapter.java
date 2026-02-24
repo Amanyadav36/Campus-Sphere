@@ -9,7 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
@@ -69,11 +74,40 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             }
         }
 
-        if (holder.btnBookmark != null) {
+        String uid = FirebaseAuth.getInstance().getCurrentUser() != null ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+
+        if (holder.btnBookmark != null && uid != null) {
+            DocumentReference bookmarkRef = FirebaseFirestore.getInstance()
+                    .collection("users").document(uid).collection("bookmarks").document(event.getEventId());
+
+            bookmarkRef.get().addOnSuccessListener(doc -> {
+                if (doc.exists()) {
+                    holder.btnBookmark.setColorFilter(android.graphics.Color.WHITE);
+                    holder.btnBookmark.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#6C5CE7")));
+                    holder.btnBookmark.setTag("bookmarked");
+                } else {
+                    holder.btnBookmark.setColorFilter(android.graphics.Color.parseColor("#636E72"));
+                    holder.btnBookmark.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F3F0FF")));
+                    holder.btnBookmark.setTag("unbookmarked");
+                }
+            });
+
             holder.btnBookmark.setOnClickListener(v -> {
-                android.widget.Toast.makeText(holder.itemView.getContext(), "Event Bookmarked", android.widget.Toast.LENGTH_SHORT).show();
-                holder.btnBookmark.setColorFilter(android.graphics.Color.WHITE);
-                holder.btnBookmark.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#6C5CE7")));
+                if ("bookmarked".equals(holder.btnBookmark.getTag())) {
+                    bookmarkRef.delete();
+                    holder.btnBookmark.setColorFilter(android.graphics.Color.parseColor("#636E72"));
+                    holder.btnBookmark.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F3F0FF")));
+                    holder.btnBookmark.setTag("unbookmarked");
+                    android.widget.Toast.makeText(holder.itemView.getContext(), "Bookmark Removed", android.widget.Toast.LENGTH_SHORT).show();
+                } else {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("eventId", event.getEventId());
+                    bookmarkRef.set(data);
+                    holder.btnBookmark.setColorFilter(android.graphics.Color.WHITE);
+                    holder.btnBookmark.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#6C5CE7")));
+                    holder.btnBookmark.setTag("bookmarked");
+                    android.widget.Toast.makeText(holder.itemView.getContext(), "Event Bookmarked", android.widget.Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
@@ -85,11 +119,27 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     .into(holder.eventImage);
         }
 
-        holder.registerBtn.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onRegisterClick(event);
-            }
-        });
+        if (holder.registerBtn != null && uid != null) {
+            FirebaseFirestore.getInstance().collection("tickets")
+                    .whereEqualTo("eventId", event.getEventId())
+                    .whereEqualTo("userId", uid)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        if (!querySnapshot.isEmpty()) {
+                            holder.registerBtn.setText("Registered");
+                            holder.registerBtn.setBackgroundColor(android.graphics.Color.GRAY);
+                        } else {
+                            holder.registerBtn.setText("Register Now");
+                            holder.registerBtn.setBackgroundColor(android.graphics.Color.parseColor("#6C5CE7"));
+                        }
+                    });
+            
+            holder.registerBtn.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onRegisterClick(event);
+                }
+            });
+        }
     }
 
     @Override

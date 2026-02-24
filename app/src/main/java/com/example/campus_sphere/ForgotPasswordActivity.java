@@ -10,23 +10,34 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-
-import java.util.List;
+import com.google.firebase.firestore.FirebaseFirestore;
+import org.json.JSONObject;
+import java.io.IOException;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import android.content.Intent;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
+
+    private static final String SEND_OTP_URL = "https://fkiahnsldyerpyijxsyn.supabase.co/functions/v1/send-otp";
+    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraWFobnNsZHllcnB5aWp4c3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MjUxMzcsImV4cCI6MjA4MTQwMTEzN30.UMev844BDXHKfBeJZ2iStpabTkY4gC-Eh8sgvqZWZJw";
 
     private EditText emailInput;
     private Button resetBtn;
     private TextView backToLogin;
-    private FirebaseAuth auth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
-        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         emailInput = findViewById(R.id.forgotEmail);
         resetBtn = findViewById(R.id.resetBtn);
@@ -52,22 +63,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         resetBtn.setText("Checking...");
 
         // 🔥 This checks if the email exists in Firebase
-        auth.fetchSignInMethodsForEmail(email)
-                .addOnSuccessListener(result -> {
-                    List<String> signInMethods = result.getSignInMethods();
-
-                    // If list is empty, user does not exist
-                    if (signInMethods == null || signInMethods.isEmpty()) {
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.isEmpty()) {
                         Toast.makeText(this, "Email is not registered!", Toast.LENGTH_LONG).show();
                         resetBtn.setEnabled(true);
                         resetBtn.setText("Send Reset Link");
                     } else {
-                        // User exists -> Send the email
                         sendResetLink(email);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    // Usually happens if 'Email Enumeration Protection' is ON in console
                     Toast.makeText(this, "Error checking email: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     resetBtn.setEnabled(true);
                     resetBtn.setText("Send Reset Link");
@@ -75,20 +84,66 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void sendResetLink(String email) {
-        resetBtn.setText("Sending...");
+        resetBtn.setEnabled(false);
+        resetBtn.setText("Sending Code...");
 
-        auth.sendPasswordResetEmail(email)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(ForgotPasswordActivity.this, "Reset link sent! Check your email.", Toast.LENGTH_LONG).show();
+        OkHttpClient client = new OkHttpClient();
+        JSONObject json = new JSONObject();
+        try {
+            json.put("email", email);
+            json.put("name", "User");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-                    // ✅ Step 2: Start 15-second Cooldown Timer
-                    startCooldownTimer();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ForgotPasswordActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        Request request = new Request.Builder()
+                .url(SEND_OTP_URL)
+                .post(RequestBody.create(json.toString(), MediaType.parse("application/json")))
+                .addHeader("apikey", SUPABASE_ANON_KEY)
+                .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                String msg = e.getMessage();
+                runOnUiThread(() -> {
                     resetBtn.setEnabled(true);
                     resetBtn.setText("Send Reset Link");
+                    Toast.makeText(ForgotPasswordActivity.this, "Network Error: " + msg, Toast.LENGTH_LONG).show();
                 });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                String responseData = "";
+                int codeStatus = response.code();
+                try {
+                    if (response.body() != null) {
+                        responseData = response.body().string();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                
+                final String finalResponseData = responseData;
+                runOnUiThread(() -> {
+                    resetBtn.setEnabled(true);
+                    resetBtn.setText("Send Reset Link");
+
+                    if (response.isSuccessful()) {
+                        // Pass data to OTP Verification Screen
+                        Intent intent = new Intent(ForgotPasswordActivity.this, OtpVerificationActivity.class);
+                        intent.putExtra("email", email);
+                        intent.putExtra("is_forgot_password", true); // Flag for reuse
+                        startActivity(intent);
+                        startCooldownTimer();
+                    } else {
+                        Toast.makeText(ForgotPasswordActivity.this, "Failed " + codeStatus + ": " + finalResponseData, Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
     }
 
     // 🕒 15-Second Timer Logic

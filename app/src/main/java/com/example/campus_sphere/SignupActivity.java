@@ -100,15 +100,27 @@ public class SignupActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                String msg = e.getMessage();
                 runOnUiThread(() -> {
                     signupBtn.setEnabled(true);
                     signupBtn.setText("Sign Up");
-                    Toast.makeText(SignupActivity.this, "Network Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignupActivity.this, "Network Error: " + msg, Toast.LENGTH_LONG).show();
                 });
             }
 
             @Override
             public void onResponse(Call call, Response response) {
+                String responseData = "";
+                int codeStatus = response.code();
+                try {
+                    if (response.body() != null) {
+                        responseData = response.body().string();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                
+                final String finalResponseData = responseData;
                 runOnUiThread(() -> {
                     signupBtn.setEnabled(true);
                     signupBtn.setText("Sign Up");
@@ -121,7 +133,7 @@ public class SignupActivity extends AppCompatActivity {
                         intent.putExtra("name", "Student"); // Default placeholder
                         startActivity(intent);
                     } else {
-                        Toast.makeText(SignupActivity.this, "Failed to send OTP", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SignupActivity.this, "Failed " + codeStatus + " to send OTP: " + finalResponseData, Toast.LENGTH_LONG).show();
                     }
                 });
             }

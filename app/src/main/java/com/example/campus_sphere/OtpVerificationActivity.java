@@ -39,14 +39,17 @@ public class OtpVerificationActivity extends AppCompatActivity {
 
     // Data from previous screen
     private String email, password, name;
+    private boolean isForgotPass = false;
     private FirebaseAuth auth;
+    private TextView otpMessageText;
 
     // Supabase Config
     private static final String VERIFY_OTP_URL = "https://fkiahnsldyerpyijxsyn.supabase.co/functions/v1/smart-processor";
+    private static final String SEND_OTP_URL = "https://fkiahnsldyerpyijxsyn.supabase.co/functions/v1/send-otp";
     private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraWFobnNsZHllcnB5aWp4c3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MjUxMzcsImV4cCI6MjA4MTQwMTEzN30.UMev844BDXHKfBeJZ2iStpabTkY4gC-Eh8sgvqZWZJw";
 
     // Timer Config
-    private static final long COOLDOWN = 30_000; // 30 Seconds
+    private static final long COOLDOWN = 25_000; // 25 Seconds
     private CountDownTimer timer;
 
     @Override
@@ -75,11 +78,27 @@ public class OtpVerificationActivity extends AppCompatActivity {
         setupOTPInputs(otp5, otp6);
         setupOTPInputs(otp6, null); // Last one stays focused
 
-        // 3. Get Data from Signup
+        // 3. Get Data from Intents
         Intent intent = getIntent();
         email = intent.getStringExtra("email");
         password = intent.getStringExtra("password");
         name = intent.getStringExtra("name");
+        isForgotPass = intent.getBooleanExtra("is_forgot_password", false);
+
+        otpMessageText = findViewById(R.id.otpMessageText);
+        if (email != null && !email.isEmpty()) {
+            if (isForgotPass) {
+                // Mask email for extra security, keep simple: e***ail@gmail.com
+                String[] parts = email.split("@");
+                String masked = email;
+                if (parts.length == 2 && parts[0].length() > 2) {
+                    masked = parts[0].charAt(0) + "***" + parts[0].substring(parts[0].length() - 2) + "@" + parts[1];
+                }
+                otpMessageText.setText("A 6 digit otp is sented to " + masked + " ( " + email + " ) associated with your accound");
+            } else {
+                otpMessageText.setText("An SMS with 6-digit OTP has been sent to your email.");
+            }
+        }
 
         // 4. Listeners
         verifyBtn.setOnClickListener(v -> verifyOtp());
@@ -126,6 +145,11 @@ public class OtpVerificationActivity extends AppCompatActivity {
         try {
             json.put("email", email);
             json.put("otp", code);
+            if (isForgotPass) {
+                json.put("type", "recovery");
+            } else {
+                json.put("type", "signup");
+            }
         } catch (Exception e) { return; }
 
         Request request = new Request.Builder()
@@ -138,28 +162,44 @@ public class OtpVerificationActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                String errorMsg = e.getMessage();
                 runOnUiThread(() -> {
                     verifyBtn.setEnabled(true);
                     verifyBtn.setText("Verify");
-                    Toast.makeText(OtpVerificationActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(OtpVerificationActivity.this, "Network error: " + errorMsg, Toast.LENGTH_LONG).show();
                 });
             }
 
             @Override
             public void onResponse(Call call, Response response) {
-                // Fix: Close response body to prevent leaks
-                try (ResponseBody body = response.body()) {
-                    runOnUiThread(() -> {
-                        if (response.isSuccessful()) {
-                            // OTP Correct -> Create Firebase Account
-                            createFirebaseAccount();
-                        } else {
-                            verifyBtn.setEnabled(true);
-                            verifyBtn.setText("Verify");
-                            Toast.makeText(OtpVerificationActivity.this, "Invalid Code", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                String responseData = "";
+                int codeStatus = response.code();
+                try {
+                    if (response.body() != null) {
+                        responseData = response.body().string();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                
+                final String finalResponseData = responseData;
+                runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
+                        // OTP Correct
+                        if (isForgotPass) {
+                            Intent resetIntent = new Intent(OtpVerificationActivity.this, ResetPasswordActivity.class);
+                            resetIntent.putExtra("email", email);
+                            startActivity(resetIntent);
+                            finish();
+                        } else {
+                            createFirebaseAccount();
+                        }
+                    } else {
+                        verifyBtn.setEnabled(true);
+                        verifyBtn.setText("Verify");
+                        Toast.makeText(OtpVerificationActivity.this, "Error " + codeStatus + ": " + finalResponseData, Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
     }
@@ -216,9 +256,61 @@ public class OtpVerificationActivity extends AppCompatActivity {
     // ---------------- RESEND LOGIC ----------------
 
     private void resendOtp() {
-        // Call your Resend API here if needed
-        Toast.makeText(this, "Code resent!", Toast.LENGTH_SHORT).show();
-        startResendCooldown();
+        resendText.setEnabled(false);
+        resendText.setText("Sending...");
+
+        OkHttpClient client = new OkHttpClient();
+        JSONObject json = new JSONObject();
+        try {
+            json.put("email", email);
+            json.put("name", name != null ? name : "Student");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Request request = new Request.Builder()
+                .url(SEND_OTP_URL)
+                .post(RequestBody.create(json.toString(), MediaType.parse("application/json")))
+                .addHeader("apikey", SUPABASE_ANON_KEY)
+                .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                String err = e.getMessage();
+                runOnUiThread(() -> {
+                    Toast.makeText(OtpVerificationActivity.this, "Network error: " + err, Toast.LENGTH_LONG).show();
+                    resendText.setEnabled(true);
+                    resendText.setText("Try Resend again");
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                String responseData = "";
+                int codeStatus = response.code();
+                try {
+                    if (response.body() != null) {
+                        responseData = response.body().string();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                
+                final String finalResponseData = responseData;
+                runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(OtpVerificationActivity.this, "Code resent!", Toast.LENGTH_SHORT).show();
+                        startResendCooldown();
+                    } else {
+                        Toast.makeText(OtpVerificationActivity.this, "Failed " + codeStatus + ": " + finalResponseData, Toast.LENGTH_LONG).show();
+                        resendText.setEnabled(true);
+                        resendText.setText("Try Resend again");
+                    }
+                });
+            }
+        });
     }
 
     private void startResendCooldown() {

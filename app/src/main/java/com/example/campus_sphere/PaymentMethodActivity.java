@@ -19,9 +19,13 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.razorpay.Checkout;
+import com.razorpay.PaymentResultListener;
+import org.json.JSONObject;
+
 import java.util.List;
 
-public class PaymentMethodActivity extends AppCompatActivity {
+public class PaymentMethodActivity extends AppCompatActivity implements PaymentResultListener {
 
     private TextView displayAmountTop;
     private TextView displayAmountBottom;
@@ -171,10 +175,25 @@ public class PaymentMethodActivity extends AppCompatActivity {
             return;
         }
 
-        if ("upi".equals(selectedMethod)) {
-            startUpiPayment();
-        } else {
-            Toast.makeText(this, "Only UPI is available in custom checkout", Toast.LENGTH_SHORT).show();
+        startRazorpayCheckout();
+    }
+
+    private void startRazorpayCheckout() {
+        Checkout checkout = new Checkout();
+        checkout.setKeyID(getString(R.string.razorpay_key_id));
+        
+        try {
+            JSONObject options = new JSONObject();
+            options.put("name", "Campus Sphere");
+            options.put("description", "Event: " + event.getTitle());
+            options.put("theme.color", "#0B3D91");
+            options.put("currency", "INR");
+            options.put("amount", String.valueOf(amountInPaise)); 
+
+            checkout.open(this, options);
+        } catch (Exception e) {
+            Toast.makeText(this, "Error in payment: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
         }
     }
 
@@ -235,5 +254,18 @@ public class PaymentMethodActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Payment failed", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onPaymentSuccess(String razorpayPaymentID) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("payment_id", razorpayPaymentID);
+        setResult(Activity.RESULT_OK, resultIntent);
+        finish();
+    }
+
+    @Override
+    public void onPaymentError(int code, String response) {
+        Toast.makeText(this, "Payment failed: " + response, Toast.LENGTH_SHORT).show();
     }
 }

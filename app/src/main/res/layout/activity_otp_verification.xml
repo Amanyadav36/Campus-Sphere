@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#66000000">
+    android:background="#00F6F2F2">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_marginHorizontal="24dp"
+        app:cardBackgroundColor="#FFFFFF"
         app:cardCornerRadius="16dp"
-        app:cardElevation="24dp"
-        app:cardBackgroundColor="#FFFFFF">
+        app:cardElevation="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,8 +34,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="OTP Verification"
-                        android:textSize="20sp"
                         android:textColor="#1D1D1D"
+                        android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -59,18 +59,19 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#F3F4F6"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp"
+                android:background="#F3F4F6" />
 
             <!-- Body Text -->
             <TextView
+                android:id="@+id/otpMessageText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="The action you are trying to perform needs 2-step verification. An SMS with 6-digit OTP has been sent to your email."
+                android:lineSpacingExtra="4dp"
+                android:text="An SMS with 6-digit OTP has been sent to your email."
                 android:textColor="#4B5563"
-                android:textSize="14sp"
-                android:lineSpacingExtra="4dp"/>
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -92,86 +93,86 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="8dp"
+                android:orientation="horizontal"
                 android:weightSum="6">
 
                 <EditText
                     android:id="@+id/otpDigit1"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_border"
                     android:gravity="center"
                     android:inputType="number"
                     android:maxLength="1"
                     android:textColor="#111827"
-                    android:textSize="20sp"
-                    android:layout_marginEnd="6dp"/>
+                    android:textSize="20sp" />
 
                 <EditText
                     android:id="@+id/otpDigit2"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_border"
                     android:gravity="center"
                     android:inputType="number"
                     android:maxLength="1"
                     android:textColor="#111827"
-                    android:textSize="20sp"
-                    android:layout_marginEnd="6dp"/>
+                    android:textSize="20sp" />
 
                 <EditText
                     android:id="@+id/otpDigit3"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_border"
                     android:gravity="center"
                     android:inputType="number"
                     android:maxLength="1"
                     android:textColor="#111827"
-                    android:textSize="20sp"
-                    android:layout_marginEnd="6dp"/>
+                    android:textSize="20sp" />
 
                 <EditText
                     android:id="@+id/otpDigit4"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_border"
                     android:gravity="center"
                     android:inputType="number"
                     android:maxLength="1"
                     android:textColor="#111827"
-                    android:textSize="20sp"
-                    android:layout_marginEnd="6dp"/>
+                    android:textSize="20sp" />
 
                 <EditText
                     android:id="@+id/otpDigit5"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_border"
                     android:gravity="center"
                     android:inputType="number"
                     android:maxLength="1"
                     android:textColor="#111827"
-                    android:textSize="20sp"
-                    android:layout_marginEnd="6dp"/>
+                    android:textSize="20sp" />
 
                 <EditText
                     android:id="@+id/otpDigit6"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_weight="1"
                     android:background="@drawable/bg_rounded_border"
                     android:gravity="center"
                     android:inputType="number"
                     android:maxLength="1"
                     android:textColor="#111827"
-                    android:textSize="20sp"/>
+                    android:textSize="20sp" />
             </LinearLayout>
 
             <TextView
@@ -187,39 +188,39 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="32dp"
+                android:orientation="horizontal"
                 android:weightSum="2">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancel"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
                     android:text="Cancel"
+                    android:textAllCaps="false"
                     android:textColor="#4B5563"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textAllCaps="false"
                     app:backgroundTint="#F3F4F6"
                     app:cornerRadius="8dp"
-                    app:elevation="0dp"
-                    android:layout_marginEnd="8dp"/>
+                    app:elevation="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/verifyOtpBtn"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="50dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
                     android:text="Continue"
+                    android:textAllCaps="false"
                     android:textColor="#4932D3"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textAllCaps="false"
                     app:backgroundTint="#E0E7FF"
                     app:cornerRadius="8dp"
-                    app:elevation="0dp"
-                    android:layout_marginStart="8dp"/>
+                    app:elevation="0dp" />
 
             </LinearLayout>
 

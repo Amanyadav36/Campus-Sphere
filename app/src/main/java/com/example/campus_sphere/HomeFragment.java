@@ -26,12 +26,15 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private com.google.android.material.button.MaterialButton btnMyEvents, btnAllEvents;
-    private FloatingActionButton chatFab;
+    private android.widget.ImageView chatFab;
     private EditText searchBar;
     private EventAdapter adapter;
     private List<Event> currentList;
     private List<Event> myEventsList;
     private List<Event> otherEventsList;
+    
+    private android.widget.TextView btnFilters, btnFilterToday, btnFilterTomorrow;
+    private String activeDateFilter = "All";
 
     @Nullable
     @Override
@@ -43,6 +46,10 @@ public class HomeFragment extends Fragment {
         btnAllEvents = view.findViewById(R.id.btnAllEvents);
         chatFab = view.findViewById(R.id.chatFab);
         searchBar = view.findViewById(R.id.search_bar);
+        
+        btnFilters = view.findViewById(R.id.btnFilters);
+        btnFilterToday = view.findViewById(R.id.btnFilterToday);
+        btnFilterTomorrow = view.findViewById(R.id.btnFilterTomorrow);
 
         currentList = new ArrayList<>();
         myEventsList = new ArrayList<>();
@@ -92,6 +99,39 @@ public class HomeFragment extends Fragment {
             public void afterTextChanged(Editable s) {}
         });
 
+        // Setup filter button click listeners
+        View.OnClickListener filterListener = v -> {
+            // Reset all styles
+            btnFilters.setBackgroundResource(R.drawable.bg_rounded_border);
+            btnFilterToday.setBackgroundResource(R.drawable.bg_rounded_border);
+            btnFilterTomorrow.setBackgroundResource(R.drawable.bg_rounded_border);
+            
+            btnFilters.setTextColor(Color.parseColor("#2D3436"));
+            btnFilterToday.setTextColor(Color.parseColor("#2D3436"));
+            btnFilterTomorrow.setTextColor(Color.parseColor("#2D3436"));
+            
+            // Set active style
+            android.widget.TextView clicked = (android.widget.TextView) v;
+            clicked.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#6C5CE7")));
+            clicked.setTextColor(Color.WHITE);
+            
+            if (v.getId() == R.id.btnFilterToday) {
+                activeDateFilter = "Today";
+            } else if (v.getId() == R.id.btnFilterTomorrow) {
+                activeDateFilter = "Tomorrow";
+            } else {
+                activeDateFilter = "All";
+                clicked.setBackgroundTintList(null); // default background
+                clicked.setTextColor(Color.parseColor("#2D3436"));
+            }
+            
+            filterEvents(searchBar.getText().toString());
+        };
+
+        btnFilters.setOnClickListener(filterListener);
+        btnFilterToday.setOnClickListener(filterListener);
+        btnFilterTomorrow.setOnClickListener(filterListener);
+
         // Fetch Real Data
         fetchEventsFromFirestore();
 
@@ -117,7 +157,25 @@ public class HomeFragment extends Fragment {
                 boolean matchesVenue = event.getVenue() != null && event.getVenue().toLowerCase().contains(lowerQuery);
                 
                 if (matchesTitle || matchesDesc || matchesCategory || matchesVenue) {
-                    filtered.add(event);
+                    // Check date filter
+                    boolean dateMatches = true;
+                    if (!"All".equals(activeDateFilter) && event.getDate() != null) {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault());
+                        String todayString = sdf.format(new java.util.Date());
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.add(java.util.Calendar.DAY_OF_YEAR, 1);
+                        String tomorrowString = sdf.format(cal.getTime());
+                        
+                        if ("Today".equals(activeDateFilter)) {
+                            dateMatches = event.getDate().equals(todayString);
+                        } else if ("Tomorrow".equals(activeDateFilter)) {
+                            dateMatches = event.getDate().equals(tomorrowString);
+                        }
+                    }
+                    
+                    if (dateMatches) {
+                        filtered.add(event);
+                    }
                 }
             }
         }

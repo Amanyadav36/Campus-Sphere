@@ -53,20 +53,6 @@
                     android:layout_marginStart="6dp"/>
             </LinearLayout>
             
-            <ImageView
-                android:id="@+id/btnBookmark"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:layout_margin="12dp"
-                android:padding="8dp"
-                android:background="@drawable/bg_rounded_border"
-                android:backgroundTint="#80000000"
-                android:src="@android:drawable/ic_input_add"
-                app:tint="#FFFFFF"
-                android:contentDescription="Bookmark" />
-                
         </RelativeLayout>
 
         <LinearLayout
@@ -110,19 +96,39 @@
                 android:textColor="#636E72"
                 android:layout_marginTop="2dp"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/detailsBtn"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:text="Register Now"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.01"
-                android:backgroundTint="#F3F0FF"
-                android:textColor="#6C5CE7"
-                app:cornerRadius="8dp"
-                app:elevation="0dp"
-                android:layout_marginTop="16dp"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/detailsBtn"
+                    android:layout_width="0dp"
+                    android:layout_height="45dp"
+                    android:layout_weight="1"
+                    android:text="Register Now"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.01"
+                    android:backgroundTint="#F3F0FF"
+                    android:textColor="#000000"
+                    app:cornerRadius="8dp"
+                    app:elevation="0dp"/>
+
+                <ImageView
+                    android:id="@+id/btnBookmark"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:padding="8dp"
+                    android:background="@drawable/bg_rounded_border"
+                    android:backgroundTint="#F3F0FF"
+                    android:src="@android:drawable/ic_input_add"
+                    app:tint="#636E72"
+                    android:contentDescription="Bookmark" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
