@@ -23,14 +23,14 @@ public class AdminActivity extends AppCompatActivity {
 
             if (itemId == R.id.nav_admin_home) {
                 selected = new AdminHomeFragment();
-            } else if (itemId == R.id.nav_admin_users) {
-                selected = new AdminUsersFragment();
-            } else if (itemId == R.id.nav_admin_events) {
-                selected = new AdminEventsFragment();
-            } else if (itemId == R.id.nav_admin_clubs) {
-                selected = new AdminClubsFragment();
-            } else if (itemId == R.id.nav_admin_payments) {
-                selected = new AdminPaymentsFragment();
+            } else if (itemId == R.id.nav_admin_actions) {
+                selected = new AdminActionFragment();
+            } else if (itemId == R.id.nav_admin_profile) {
+                ProfileFragment f = new ProfileFragment();
+                Bundle args = new Bundle();
+                args.putString(ProfileFragment.ARG_MODE, ProfileFragment.MODE_ADMIN);
+                f.setArguments(args);
+                selected = f;
             }
 
             if (selected != null) {

@@ -27,6 +27,7 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -200,31 +201,86 @@ public class EditEventActivity extends AppCompatActivity {
         String price = priceInput.getText().toString().trim();
         String priceValue = price.isEmpty() ? "Free" : "₹" + price;
 
+        String newVenue = venueSpinner.getSelectedItem().toString();
+        String newDate = dateInput.getText().toString().trim();
+        String newTime = timeInput.getText().toString().trim();
+
+        // Old slot (best effort for legacy events).
+        final String oldSlotIdFinal = (event.getVenueSlotId() != null && !event.getVenueSlotId().trim().isEmpty())
+                ? event.getVenueSlotId()
+                : VenueSlotManager.buildSlotId(event.getVenue(), event.getDate(), event.getTime());
+
         Map<String, Object> updates = new HashMap<>();
         updates.put("title", titleInput.getText().toString().trim());
         updates.put("description", descInput.getText().toString().trim());
         updates.put("category", categoryInput.getText().toString().trim());
         updates.put("price", priceValue);
-        updates.put("venue", venueSpinner.getSelectedItem().toString());
-        updates.put("date", dateInput.getText().toString().trim());
-        updates.put("time", timeInput.getText().toString().trim());
+        updates.put("venue", newVenue);
+        updates.put("date", newDate);
+        updates.put("time", newTime);
         updates.put("imageUrl", imageUrl);
         updates.put("attendanceEnabled", enableAttendanceCheck.isChecked());
         updates.put("creatorId", FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : event.getCreatorId());
 
-        db.collection("events").document(event.getEventId())
-                .update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Event updated", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
-                    finish();
+        publishEventBtn.setEnabled(false);
+        publishEventBtn.setText("Checking Availability...");
+
+        // Pre-check: find any other event in same slot (venue+date+time).
+        db.collection("events")
+                .whereEqualTo("venue", newVenue)
+                .whereEqualTo("date", newDate)
+                .whereEqualTo("time", newTime)
+                .get()
+                .addOnSuccessListener((QuerySnapshot snap) -> {
+                    boolean conflict = false;
+                    if (snap != null && !snap.isEmpty()) {
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : snap.getDocuments()) {
+                            if (doc.getId().equals(event.getEventId())) continue;
+                            String eid = doc.getString("eventId");
+                            if (eid != null && eid.equals(event.getEventId())) continue;
+                            conflict = true;
+                            break;
+                        }
+                    }
+                    if (conflict) {
+                        Toast.makeText(this, "⚠️ " + newVenue + " is already booked for that time.", Toast.LENGTH_LONG).show();
+                        publishEventBtn.setEnabled(true);
+                        publishEventBtn.setText("Update Event");
+                        return;
+                    }
+
+                    publishEventBtn.setText("Updating...");
+                    VenueSlotManager.updateEventWithLock(db, event.getEventId(), oldSlotIdFinal, newVenue, newDate, newTime, updates)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Event updated", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                String msg = e.getMessage() != null && e.getMessage().contains("VENUE_SLOT_TAKEN")
+                                        ? ("⚠️ " + newVenue + " is already booked for that time.")
+                                        : ("Update failed: " + e.getMessage());
+                                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                                publishEventBtn.setEnabled(true);
+                                publishEventBtn.setText("Update Event");
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    publishEventBtn.setEnabled(true);
-                    publishEventBtn.setText("Update Event");
+                    // If check fails, still enforce lock transaction to prevent double booking.
+                    publishEventBtn.setText("Updating...");
+                    VenueSlotManager.updateEventWithLock(db, event.getEventId(), oldSlotIdFinal, newVenue, newDate, newTime, updates)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Event updated", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
+                                finish();
+                            })
+                            .addOnFailureListener(ex -> {
+                                Toast.makeText(this, "Update failed: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                                publishEventBtn.setEnabled(true);
+                                publishEventBtn.setText("Update Event");
+                            });
                 });
     }
 

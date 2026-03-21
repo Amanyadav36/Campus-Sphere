@@ -1,21 +1,22 @@
 package com.example.campus_sphere;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONObject;
+import android.widget.EditText;
+import android.widget.ImageButton;
 
-import java.io.IOException;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Locale;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,96 +26,241 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 public class ChatBotActivity extends AppCompatActivity {
+
+    private static final String AI_URL = "https://fkiahnsldyerpyijxsyn.supabase.co/functions/v1/campus-ai";
+    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraWFobnNsZHllcnB5aWp4c3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MjUxMzcsImV4cCI6MjA4MTQwMTEzN30.UMev844BDXHKfBeJZ2iStpabTkY4gC-Eh8sgvqZWZJw";
 
     private RecyclerView recyclerView;
     private EditText messageInput;
     private ImageButton sendBtn;
     private ChatAdapter adapter;
-    private List<ChatMessage> messageList;
+    private final List<ChatMessage> messageList = new ArrayList<>();
 
-    // 🔥 SECURITY UPGRADE: Use Supabase URL, NOT Gemini URL
-    private static final String SUPABASE_CHAT_URL = "https://fkiahnsldyerpyijxsyn.supabase.co/functions/v1/campus-ai";
-
-    // 🔥 Same Anon Key you used for OTP (Safe to be public-ish, it's restricted by policies)
-    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraWFobnNsZHllcnB5aWp4c3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MjUxMzcsImV4cCI6MjA4MTQwMTEzN30.UMev844BDXHKfBeJZ2iStpabTkY4gC-Eh8sgvqZWZJw";
-
-    private static final String APP_CONTEXT =
-            "You are 'Campus Sphere AI'. Answer questions about Chameli Devi Group of Institutions. Keep it short.";
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_bot);
 
+        db = FirebaseFirestore.getInstance();
+
         recyclerView = findViewById(R.id.chatRecyclerView);
         messageInput = findViewById(R.id.chatInput);
         sendBtn = findViewById(R.id.sendBtn);
 
-        messageList = new ArrayList<>();
         adapter = new ChatAdapter(messageList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        addMessage("Hello! I am secure and ready to help.", false);
+        addMessage("Hello! I am your CDGI Campus Assistant. Ask me anything about our clubs or upcoming events.", false);
 
         sendBtn.setOnClickListener(v -> {
-            String msg = messageInput.getText().toString().trim();
-            if (!msg.isEmpty()) {
-                addMessage(msg, true);
-                messageInput.setText("");
-                callSupabaseAI(msg);
-            }
+            String q = messageInput.getText().toString().trim();
+            if (q.isEmpty()) return;
+
+            addMessage(q, true);
+            messageInput.setText("");
+
+            int placeholderIndex = addMessage("Thinking...", false);
+            sendBtn.setEnabled(false);
+
+            answerFromFirestoreStrict(q, answer -> {
+                updateMessage(placeholderIndex, answer);
+                sendBtn.setEnabled(true);
+            });
         });
     }
 
-    private void addMessage(String text, boolean isUser) {
+    private int addMessage(String text, boolean isUser) {
         messageList.add(new ChatMessage(text, isUser));
-        adapter.notifyItemInserted(messageList.size() - 1);
-        recyclerView.smoothScrollToPosition(messageList.size() - 1);
+        int idx = messageList.size() - 1;
+        adapter.notifyItemInserted(idx);
+        recyclerView.smoothScrollToPosition(idx);
+        return idx;
     }
 
-    private void callSupabaseAI(String userQuery) {
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .build();
+    private void updateMessage(int index, String newText) {
+        if (index < 0 || index >= messageList.size()) return;
+        messageList.get(index).text = newText;
+        adapter.notifyItemChanged(index);
+        recyclerView.smoothScrollToPosition(index);
+    }
 
-        JSONObject jsonBody = new JSONObject();
+    private interface ResultCallback<T> {
+        void onResult(T value);
+    }
+
+    /**
+     * Strict RAG: answers ONLY from Firestore data (no LLM generation).
+     * If no matching club/event exists, returns "No relevant data found."
+     */
+    private void answerFromFirestoreStrict(String userQuery, ResultCallback<String> cb) {
+        fetchClubsMerged(clubs -> fetchEvents(events -> {
+            Map<String, ChatRag.RagClub> clubById = new HashMap<>();
+            for (ChatRag.RagClub c : clubs) {
+                if (c != null && c.id != null && !c.id.trim().isEmpty()) clubById.put(c.id, c);
+            }
+
+            List<ChatRag.RagEvent> enrichedEvents = new ArrayList<>();
+            for (ChatRag.RagEvent e : events) {
+                String clubName = e.clubName;
+                if ((clubName == null || clubName.trim().isEmpty()) && e.clubId != null) {
+                    ChatRag.RagClub c = clubById.get(e.clubId);
+                    if (c != null) clubName = c.name;
+                }
+                enrichedEvents.add(new ChatRag.RagEvent(
+                        e.id, e.title, e.clubId,
+                        clubName != null ? clubName : "",
+                        e.date, e.time, e.venue, e.category, e.price, e.description
+                ));
+            }
+
+            String answer = ChatRag.answer(userQuery, clubs, enrichedEvents);
+            cb.onResult(answer);
+        }));
+    }
+
+    private void fetchClubsMerged(ResultCallback<List<ChatRag.RagClub>> cb) {
+        Map<String, ChatRag.RagClub> byLeaderId = new HashMap<>();
+        java.util.concurrent.atomic.AtomicInteger remaining = new java.util.concurrent.atomic.AtomicInteger(2);
+
+        Runnable finish = () -> cb.onResult(new ArrayList<>(byLeaderId.values()));
+
+        // Preferred: clubs collection
+        db.collection("clubs").limit(500).get()
+                .addOnSuccessListener(snapshot -> {
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String leaderId = doc.getString("leaderId");
+                        if (leaderId == null || leaderId.trim().isEmpty()) leaderId = doc.getId();
+                        if (leaderId == null) continue;
+
+                        String name = doc.getString("name");
+                        if (name == null || name.trim().isEmpty()) name = doc.getString("clubName");
+                        String handle = doc.getString("handle");
+                        if (handle == null || handle.trim().isEmpty()) handle = doc.getString("clubHandle");
+                        String bio = doc.getString("bio");
+                        if (bio == null || bio.trim().isEmpty()) bio = doc.getString("clubBio");
+
+                        byLeaderId.put(leaderId, new ChatRag.RagClub(leaderId, safe(name), safe(handle), safe(bio)));
+                    }
+                    if (remaining.decrementAndGet() == 0) finish.run();
+                })
+                .addOnFailureListener(e -> {
+                    if (remaining.decrementAndGet() == 0) finish.run();
+                });
+
+        // Legacy: leaders in users collection
+        db.collection("users").whereEqualTo("role", "leader").limit(500).get()
+                .addOnSuccessListener(snapshot -> {
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        String leaderId = doc.getId();
+                        if (leaderId == null) continue;
+
+                        String name = doc.getString("clubName");
+                        if (name == null || name.trim().isEmpty()) name = doc.getString("name");
+                        if (name == null || name.trim().isEmpty()) name = doc.getString("email");
+
+                        String handle = doc.getString("clubHandle");
+                        String bio = doc.getString("clubBio");
+
+                        ChatRag.RagClub existing = byLeaderId.get(leaderId);
+                        if (existing == null || existing.name == null || existing.name.trim().isEmpty()) {
+                            byLeaderId.put(leaderId, new ChatRag.RagClub(leaderId, safe(name), safe(handle), safe(bio)));
+                        }
+                    }
+                    if (remaining.decrementAndGet() == 0) finish.run();
+                })
+                .addOnFailureListener(e -> {
+                    if (remaining.decrementAndGet() == 0) finish.run();
+                });
+    }
+
+    private void fetchEvents(ResultCallback<List<ChatRag.RagEvent>> cb) {
+        db.collection("events").limit(500).get()
+                .addOnSuccessListener(snapshot -> cb.onResult(mapEvents(snapshot)))
+                .addOnFailureListener(e -> cb.onResult(new ArrayList<>()));
+    }
+
+    private List<ChatRag.RagEvent> mapEvents(QuerySnapshot snapshot) {
+        List<ChatRag.RagEvent> out = new ArrayList<>();
+        if (snapshot == null) return out;
+        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+            String eventId = doc.getString("eventId");
+            if (eventId == null || eventId.trim().isEmpty()) eventId = doc.getId();
+
+            String title = doc.getString("title");
+            String category = doc.getString("category");
+            String date = doc.getString("date");
+            String time = doc.getString("time");
+            String venue = doc.getString("venue");
+            String price = doc.getString("price");
+            String description = doc.getString("description");
+
+            String clubId = doc.getString("clubId");
+            if (clubId == null || clubId.trim().isEmpty()) clubId = doc.getString("creatorId");
+
+            out.add(new ChatRag.RagEvent(
+                    safe(eventId),
+                    safe(title),
+                    safe(clubId),
+                    "", // resolved later from clubs
+                    safe(date),
+                    safe(time),
+                    safe(venue),
+                    safe(category),
+                    safe(price),
+                    safe(description)
+            ));
+        }
+        return out;
+    }
+
+    private static String safe(String s) {
+        return s != null ? s : "";
+    }
+
+    private void callAi(String question, String data, ResultCallback<String> cb) {
+        OkHttpClient client = new OkHttpClient();
+        JSONObject json = new JSONObject();
         try {
-            // Send simpler JSON to Supabase
-            jsonBody.put("message", userQuery);
-            jsonBody.put("context", APP_CONTEXT);
-        } catch (Exception e) { return; }
+            json.put("question", question);
+            json.put("data", data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Request request = new Request.Builder()
-                .url(SUPABASE_CHAT_URL)
-                .post(RequestBody.create(jsonBody.toString(), MediaType.parse("application/json")))
-                .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY) // Auth Header
-                .addHeader("apikey", SUPABASE_ANON_KEY) // API Key Header
+                .url(AI_URL)
+                .post(RequestBody.create(json.toString(), MediaType.parse("application/json")))
+                .addHeader("apikey", SUPABASE_ANON_KEY)
+                .addHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> addMessage("Connection Error.", false));
+                runOnUiThread(() -> cb.onResult("Network error. Please try again."));
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
+                if (response.body() != null) {
+                    String resStr = response.body().string();
                     try {
-                        String responseBody = response.body().string();
-                        JSONObject jsonResponse = new JSONObject(responseBody);
-
-                        // Supabase sends back: { "reply": "The AI response text" }
-                        String aiReply = jsonResponse.getString("reply");
-
-                        runOnUiThread(() -> addMessage(aiReply, false));
+                        JSONObject resJson = new JSONObject(resStr);
+                        String reply = resJson.optString("reply", "I'm not sure how to answer that.");
+                        runOnUiThread(() -> cb.onResult(reply));
                     } catch (Exception e) {
-                        runOnUiThread(() -> addMessage("Error reading response.", false));
+                        runOnUiThread(() -> cb.onResult("Error processing response."));
                     }
                 } else {
-                    runOnUiThread(() -> addMessage("Server Error: " + response.code(), false));
+                    runOnUiThread(() -> cb.onResult("No response from assistant."));
                 }
             }
         });

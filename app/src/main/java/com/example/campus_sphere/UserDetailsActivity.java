@@ -36,8 +36,8 @@ public class UserDetailsActivity extends AppCompatActivity {
 
     // UI Elements
     private ImageView profileImage;
-    private EditText nameInput, emailInput, mobileInput, bioInput, enrollmentInput, interestInput;
-    private Spinner branchSpinner, yearSpinner;
+    private EditText nameInput, emailInput, mobileInput, bioInput, enrollmentInput, interestInput, yearInput;
+    private Spinner branchSpinner;
     private Button submitBtn;
 
     // Data
@@ -78,7 +78,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         enrollmentInput = findViewById(R.id.enrollment);
         interestInput = findViewById(R.id.interest);
         branchSpinner = findViewById(R.id.branchSpinner);
-        yearSpinner = findViewById(R.id.yearSpinner);
+        yearInput = findViewById(R.id.yearInput);
         
         submitBtn = findViewById(R.id.submitBtn);
 
@@ -96,7 +96,6 @@ public class UserDetailsActivity extends AppCompatActivity {
 
     private void setupSpinners() {
         branchSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Select Branch", "CSE", "IT", "Mechanical", "Civil", "ECE"}));
-        yearSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Select Year", "1st Year", "2nd Year", "3rd Year", "4th Year"}));
     }
 
     private void uploadToCloudinary() {
@@ -151,7 +150,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         userMap.put("name", nameStr);
         userMap.put("enrollment", enrollmentInput.getText().toString().trim());
         userMap.put("branch", branchSpinner.getSelectedItem().toString());
-        userMap.put("year", yearSpinner.getSelectedItem().toString());
+        userMap.put("year", yearInput.getText().toString().trim());
         userMap.put("interest", interestInput.getText().toString().trim());
         userMap.put("bio", bioInput.getText().toString().trim());
         userMap.put("mobile", mobileInput.getText().toString().trim());
@@ -210,12 +209,12 @@ public class UserDetailsActivity extends AppCompatActivity {
                         enrollmentInput.setText(document.getString("enrollment"));
                         interestInput.setText(document.getString("interest"));
                         
-                        // ✅ Load Spinners
+                        // Load academic selections
                         setSpinnerSelection(branchSpinner, document.getString("branch"));
                         
                         String year = document.getString("year");
                         if (year == null) year = document.getString("section"); // fallback for old data
-                        setSpinnerSelection(yearSpinner, year);
+                        yearInput.setText(year != null ? year : "");
 
                         // Load Image if exists
                         String imgUrl = document.getString("profileImage");
@@ -242,6 +241,7 @@ public class UserDetailsActivity extends AppCompatActivity {
         String nameStr = nameInput.getText().toString().trim();
         String emailStr = emailInput.getText().toString().trim();
         String mobileStr = mobileInput.getText().toString().trim();
+        String yearStr = yearInput.getText().toString().trim();
 
         if (nameStr.isEmpty()) {
             nameInput.setError("Name is required");
@@ -276,6 +276,18 @@ public class UserDetailsActivity extends AppCompatActivity {
         if (!android.util.Patterns.PHONE.matcher(mobileStr).matches() || mobileStr.length() < 10) {
             mobileInput.setError("Please enter a valid phone number");
             mobileInput.requestFocus();
+            return false;
+        }
+
+        if (yearStr.isEmpty()) {
+            yearInput.setError("Year or section is required");
+            yearInput.requestFocus();
+            return false;
+        }
+
+        if (!yearStr.matches("^\\d{4}(-\\d{4})?$")) {
+            yearInput.setError("Use 2026-2027 or 2027 format");
+            yearInput.requestFocus();
             return false;
         }
 

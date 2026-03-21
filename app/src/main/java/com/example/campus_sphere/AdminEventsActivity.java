@@ -1,6 +1,5 @@
 package com.example.campus_sphere;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -9,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -40,6 +40,13 @@ public class AdminEventsActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onEdit(Event event) {
+                Intent intent = new Intent(AdminEventsActivity.this, EditEventActivity.class);
+                intent.putExtra("event_data", event);
+                startActivity(intent);
+            }
+
+            @Override
             public void onToggleFeature(Event event, boolean feature) {
                 db.collection("events").document(event.getEventId())
                         .update("featured", feature)
@@ -64,6 +71,12 @@ public class AdminEventsActivity extends AppCompatActivity {
         fetchEvents();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fetchEvents();
+    }
+
     private void fetchEvents() {
         db.collection("events").get()
                 .addOnSuccessListener(snapshot -> {
@@ -82,12 +95,11 @@ public class AdminEventsActivity extends AppCompatActivity {
     }
 
     private void confirmDelete(Event event) {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("Delete Event?")
                 .setMessage("Delete '" + event.getTitle() + "'? This cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    db.collection("events").document(event.getEventId())
-                            .delete()
+                    VenueSlotManager.deleteEventAndReleaseLock(db, event.getEventId())
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show();
                                 fetchEvents();

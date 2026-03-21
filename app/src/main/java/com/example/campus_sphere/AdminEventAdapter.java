@@ -15,6 +15,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
 
     public interface OnEventActionListener {
         void onView(Event event);
+        void onEdit(Event event);
         void onToggleFeature(Event event, boolean feature);
         void onDelete(Event event);
     }
@@ -48,6 +49,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         holder.featureBtn.setText(item.isFeatured() ? "Unfeature" : "Feature");
 
         holder.viewBtn.setOnClickListener(v -> listener.onView(event));
+        holder.editBtn.setOnClickListener(v -> listener.onEdit(event));
         holder.featureBtn.setOnClickListener(v -> listener.onToggleFeature(event, !item.isFeatured()));
         holder.deleteBtn.setOnClickListener(v -> listener.onDelete(event));
     }
@@ -62,6 +64,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         TextView meta;
         TextView price;
         Button viewBtn;
+        Button editBtn;
         Button featureBtn;
         Button deleteBtn;
 
@@ -71,6 +74,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
             meta = itemView.findViewById(R.id.adminEventMeta);
             price = itemView.findViewById(R.id.adminEventPrice);
             viewBtn = itemView.findViewById(R.id.adminEventViewBtn);
+            editBtn = itemView.findViewById(R.id.adminEventEditBtn);
             featureBtn = itemView.findViewById(R.id.adminEventFeatureBtn);
             deleteBtn = itemView.findViewById(R.id.adminEventDeleteBtn);
         }

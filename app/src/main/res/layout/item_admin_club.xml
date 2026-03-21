@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <TextView
+            android:id="@+id/adminClubName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Club Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#2D3436" />
+
+        <TextView
+            android:id="@+id/adminClubHandle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@handle"
+            android:textSize="12sp"
+            android:textColor="#636E72" />
+
+        <TextView
+            android:id="@+id/adminClubLeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Leader: -"
+            android:textSize="12sp"
+            android:textColor="#636E72" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
+

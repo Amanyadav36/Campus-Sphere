@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local logs/artifacts
+/logs/
+
+# Local Gradle cache (for locked-down environments)
+/.gradle-user-home/
+

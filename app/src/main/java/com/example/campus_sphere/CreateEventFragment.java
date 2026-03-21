@@ -242,7 +242,8 @@ public class CreateEventFragment extends Fragment {
                 enableAttendanceCheck.isChecked()
         );
 
-        db.collection("events").document(eventId).set(newEvent)
+        // Enforce locking at write-time (prevents race conditions).
+        VenueSlotManager.createEventWithLock(db, newEvent)
                 .addOnSuccessListener(aVoid -> {
                     if (getContext() != null) {
                         Toast.makeText(getContext(), "✅ Event Published!", Toast.LENGTH_LONG).show();
@@ -251,7 +252,11 @@ public class CreateEventFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> {
                     if (getContext() != null) {
-                        Toast.makeText(getContext(), "DB Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        String msg = "DB Error: " + e.getMessage();
+                        if (e.getMessage() != null && e.getMessage().contains("VENUE_SLOT_TAKEN")) {
+                            msg = "⚠️ " + selectedVenue + " is already booked for that time.";
+                        }
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                         publishEventBtn.setEnabled(true);
                         publishEventBtn.setText("Publish Event");
                     }

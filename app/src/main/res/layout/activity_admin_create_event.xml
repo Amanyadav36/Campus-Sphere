@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#F8F9FA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Event"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#2D3436"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Club"
+            android:textStyle="bold"
+            android:textColor="#2D3436" />
+
+        <Spinner
+            android:id="@+id/spinnerClub"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="6dp"
+            android:background="#FFFFFF" />
+
+        <EditText
+            android:id="@+id/inputTitle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Title"
+            android:paddingHorizontal="12dp"
+            android:textColor="#2D3436"
+            android:textColorHint="#757575" />
+
+        <EditText
+            android:id="@+id/inputCategory"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Category"
+            android:paddingHorizontal="12dp"
+            android:textColor="#2D3436"
+            android:textColorHint="#757575" />
+
+        <EditText
+            android:id="@+id/inputDate"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Date (dd/MM/yyyy)"
+            android:focusable="false"
+            android:clickable="true"
+            android:paddingHorizontal="12dp"
+            android:textColor="#2D3436"
+            android:textColorHint="#757575" />
+
+        <EditText
+            android:id="@+id/inputTime"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Time (HH:mm)"
+            android:focusable="false"
+            android:clickable="true"
+            android:paddingHorizontal="12dp"
+            android:textColor="#2D3436"
+            android:textColorHint="#757575" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Venue"
+            android:textStyle="bold"
+            android:textColor="#2D3436" />
+
+        <Spinner
+            android:id="@+id/spinnerVenue"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="6dp"
+            android:background="#FFFFFF" />
+
+        <EditText
+            android:id="@+id/inputPrice"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Price (leave empty for Free)"
+            android:inputType="number"
+            android:paddingHorizontal="12dp"
+            android:textColor="#2D3436"
+            android:textColorHint="#757575" />
+
+        <EditText
+            android:id="@+id/inputDescription"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_rounded_border"
+            android:hint="Description (optional)"
+            android:gravity="top"
+            android:padding="12dp"
+            android:textColor="#2D3436"
+            android:textColorHint="#757575" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCreateEvent"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="14dp"
+            android:text="Create Event"
+            android:textAllCaps="false"
+            android:backgroundTint="#0984E3"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/tvCreateEventStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#636E72" />
+    </LinearLayout>
+</ScrollView>
+

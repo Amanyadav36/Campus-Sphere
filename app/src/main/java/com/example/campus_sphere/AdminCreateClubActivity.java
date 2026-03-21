@@ -20,6 +20,7 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -212,6 +213,7 @@ public class AdminCreateClubActivity extends AppCompatActivity {
 
                                 Map<String, Object> updates = new HashMap<>();
                                 updates.put("role", "leader");
+                                updates.put("clubId", userId);
                                 updates.put("clubName", name);
                                 updates.put("clubHandle", handle);
                                 updates.put("clubBio", bio);
@@ -222,6 +224,7 @@ public class AdminCreateClubActivity extends AppCompatActivity {
                                         .update(updates)
                                         .addOnSuccessListener(aVoid -> {
                                             ensureLeaderMembership(userId, doc);
+                                            upsertClubDoc(userId, email, name, handle, bio);
                                             AdminAuditLogger.log("CREATE_CLUB", "club", userId, "", name);
                                             Toast.makeText(this, "Club created", Toast.LENGTH_SHORT).show();
                                             finish();
@@ -232,6 +235,20 @@ public class AdminCreateClubActivity extends AppCompatActivity {
                                         });
                             });
                 });
+    }
+
+    private void upsertClubDoc(String clubId, String leaderEmail, String name, String handle, String bio) {
+        Map<String, Object> club = new HashMap<>();
+        club.put("name", name);
+        club.put("handle", handle);
+        club.put("bio", bio);
+        club.put("logoUrl", logoUrl);
+        club.put("headerUrl", headerUrl);
+        club.put("leaderId", clubId); // legacy: clubId == leaderId
+        club.put("leaderEmail", leaderEmail);
+
+        db.collection("clubs").document(clubId)
+                .set(club, SetOptions.merge());
     }
 
     private void ensureLeaderMembership(String clubId, DocumentSnapshot leaderDoc) {

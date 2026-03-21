@@ -5,19 +5,11 @@
         android:icon="@android:drawable/ic_menu_view"
         android:title="Home" />
     <item
-        android:id="@+id/nav_admin_users"
+        android:id="@+id/nav_admin_actions"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="Actions" />
+    <item
+        android:id="@+id/nav_admin_profile"
         android:icon="@android:drawable/ic_menu_myplaces"
-        android:title="Users" />
-    <item
-        android:id="@+id/nav_admin_events"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Events" />
-    <item
-        android:id="@+id/nav_admin_clubs"
-        android:icon="@android:drawable/ic_menu_share"
-        android:title="Clubs" />
-    <item
-        android:id="@+id/nav_admin_payments"
-        android:icon="@android:drawable/ic_menu_send"
-        android:title="Payments" />
+        android:title="Profile" />
 </menu>

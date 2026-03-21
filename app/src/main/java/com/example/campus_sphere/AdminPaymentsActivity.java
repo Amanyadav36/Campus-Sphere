@@ -31,12 +31,12 @@ public class AdminPaymentsActivity extends AppCompatActivity {
         adapter = new AdminPaymentAdapter(payments, new AdminPaymentAdapter.OnPaymentActionListener() {
             @Override
             public void onVerify(PaymentItem item) {
-                // No-op in activity mode
+                verifyPayment(item);
             }
 
             @Override
             public void onReject(PaymentItem item) {
-                // No-op in activity mode
+                rejectPayment(item);
             }
         });
         recyclerView.setAdapter(adapter);
@@ -61,5 +61,31 @@ public class AdminPaymentsActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to load payments", Toast.LENGTH_SHORT).show()
                 );
+    }
+
+    private void verifyPayment(PaymentItem item) {
+        if (item == null) return;
+        if (item.getPaymentId() == null || "FREE_TICKET".equals(item.getPaymentId())) {
+            Toast.makeText(this, "Free ticket cannot be verified", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        db.collection("tickets").document(item.getId())
+                .update("verified", true)
+                .addOnSuccessListener(aVoid -> {
+                    AdminAuditLogger.log("PAYMENT_VERIFY", "ticket", item.getId(), "unverified", "verified");
+                    fetchPayments();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Verify failed", Toast.LENGTH_SHORT).show());
+    }
+
+    private void rejectPayment(PaymentItem item) {
+        if (item == null) return;
+        db.collection("tickets").document(item.getId())
+                .update("verified", false)
+                .addOnSuccessListener(aVoid -> {
+                    AdminAuditLogger.log("PAYMENT_REJECT", "ticket", item.getId(), "unverified", "rejected");
+                    fetchPayments();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Reject failed", Toast.LENGTH_SHORT).show());
     }
 }

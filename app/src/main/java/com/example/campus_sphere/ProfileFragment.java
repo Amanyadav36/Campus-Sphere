@@ -23,6 +23,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileFragment extends Fragment {
 
+    public static final String ARG_MODE = "mode";
+    public static final String MODE_ADMIN = "admin";
+
     // UI Variables
     private TextView profileName, profileEmail, profileEnrollment, profileBranch, profileYear, profileInterest, profileBio, profileMobile;
     private TextView profileEvents, profileBookmarks, profileCertificates, profileReceipts;
@@ -30,12 +33,33 @@ public class ProfileFragment extends Fragment {
     private Button editProfileBtn, logoutBtn;
     private FirebaseAuth auth;
 
+    // Admin mode UI
+    private TextView tvAdminName;
+    private TextView tvAdminEmail;
+    private TextView tvAdminRole;
+    private Button btnAdminLogout;
+    private boolean isAdminMode = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_profile_fixed, container, false);
+        String mode = getArguments() != null ? getArguments().getString(ARG_MODE) : null;
+        isAdminMode = MODE_ADMIN.equals(mode);
+
+        View view = inflater.inflate(isAdminMode ? R.layout.fragment_admin_profile : R.layout.activity_profile_fixed, container, false);
 
         auth = FirebaseAuth.getInstance();
+
+        if (isAdminMode) {
+            tvAdminName = view.findViewById(R.id.tvAdminName);
+            tvAdminEmail = view.findViewById(R.id.tvAdminEmail);
+            tvAdminRole = view.findViewById(R.id.tvAdminRole);
+            btnAdminLogout = view.findViewById(R.id.btnAdminLogout);
+
+            btnAdminLogout.setOnClickListener(v -> logout());
+            loadAdminData();
+            return view;
+        }
 
         // 1. Initialize Views
         profileName = view.findViewById(R.id.profileName);
@@ -100,7 +124,11 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadUserData();
+        if (isAdminMode) {
+            loadAdminData();
+        } else {
+            loadUserData();
+        }
     }
     // --------------------------------------------
 
@@ -160,6 +188,25 @@ public class ProfileFragment extends Fragment {
                     if (getContext() != null) {
                         Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show();
                     }
+                });
+    }
+
+    private void loadAdminData() {
+        if (auth.getCurrentUser() == null) return;
+        String uid = auth.getCurrentUser().getUid();
+        String email = auth.getCurrentUser().getEmail();
+
+        if (tvAdminEmail != null) tvAdminEmail.setText(email != null ? email : "No email");
+
+        FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                .addOnSuccessListener(doc -> {
+                    if (!isAdded()) return;
+                    String name = doc.getString("name");
+                    String role = doc.getString("role");
+                    if (name == null || name.trim().isEmpty()) name = "Admin";
+                    if (role == null || role.trim().isEmpty()) role = "admin";
+                    if (tvAdminName != null) tvAdminName.setText(name);
+                    if (tvAdminRole != null) tvAdminRole.setText("Role: " + role);
                 });
     }
 

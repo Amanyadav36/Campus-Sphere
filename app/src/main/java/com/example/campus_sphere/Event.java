@@ -14,6 +14,11 @@ public class Event implements Serializable { // ✅ Implements Serializable
     private String time;
     private String imageUrl;
     private String creatorId;
+    // Optional but recommended going forward: stable club reference.
+    // For legacy data, this may be null (fallback to creatorId).
+    private String clubId;
+    // Venue slot lock id (venue+date+time) to prevent double-booking.
+    private String venueSlotId;
     private boolean attendanceEnabled;
 
     public Event() {} // Required for Firestore
@@ -29,6 +34,7 @@ public class Event implements Serializable { // ✅ Implements Serializable
         this.time = time;
         this.imageUrl = imageUrl;
         this.creatorId = creatorId;
+        this.clubId = creatorId;
         this.attendanceEnabled = attendanceEnabled;
     }
 
@@ -43,7 +49,12 @@ public class Event implements Serializable { // ✅ Implements Serializable
     public String getTime() { return time; }
     public String getImageUrl() { return imageUrl; }
     public String getCreatorId() { return creatorId; }
+    public String getClubId() { return clubId != null ? clubId : creatorId; }
+    public String getVenueSlotId() { return venueSlotId; }
     public boolean isAttendanceEnabled() { return attendanceEnabled; }
+
+    public void setClubId(String clubId) { this.clubId = clubId; }
+    public void setVenueSlotId(String venueSlotId) { this.venueSlotId = venueSlotId; }
 
     // ✅ NEW HELPER: Converts "₹500" to 50000 (paise) for Razorpay
     public long getAmountInPaise() {

@@ -1,6 +1,5 @@
 package com.example.campus_sphere;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -40,6 +40,13 @@ public class AdminEventsFragment extends Fragment {
             @Override
             public void onView(Event event) {
                 Intent intent = new Intent(getContext(), EventDetailsActivity.class);
+                intent.putExtra("event_data", event);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onEdit(Event event) {
+                Intent intent = new Intent(getContext(), EditEventActivity.class);
                 intent.putExtra("event_data", event);
                 startActivity(intent);
             }
@@ -73,6 +80,12 @@ public class AdminEventsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        fetchEvents();
+    }
+
     private void fetchEvents() {
         db.collection("events").get()
                 .addOnSuccessListener(snapshot -> {
@@ -91,12 +104,12 @@ public class AdminEventsFragment extends Fragment {
     }
 
     private void confirmDelete(Event event) {
-        new AlertDialog.Builder(getContext())
+        if (getContext() == null) return;
+        new MaterialAlertDialogBuilder(getContext())
                 .setTitle("Delete Event?")
                 .setMessage("Delete '" + event.getTitle() + "'? This cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    db.collection("events").document(event.getEventId())
-                            .delete()
+                    VenueSlotManager.deleteEventAndReleaseLock(db, event.getEventId())
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
                                 AdminAuditLogger.log("EVENT_DELETE", "event", event.getEventId(),

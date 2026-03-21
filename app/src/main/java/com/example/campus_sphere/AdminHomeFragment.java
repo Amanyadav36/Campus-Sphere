@@ -1,57 +1,41 @@
 package com.example.campus_sphere;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class AdminHomeFragment extends Fragment {
 
-    private Button logoutBtn;
-    private Button manageUsersBtn;
-    private Button moderateEventsBtn;
-    private Button reviewPaymentsBtn;
-    private TextView usersCount;
-    private TextView eventsCount;
-    private TextView ticketsCount;
-    private TextView revenueCount;
-    private FirebaseAuth auth;
+    private TextView tvUsers;
+    private TextView tvClubs;
+    private TextView tvEvents;
+    private TextView tvRegistrations;
+    private TextView tvStatus;
+
     private FirebaseFirestore db;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_admin_dashboard, container, false);
+        View view = inflater.inflate(R.layout.fragment_admin_home, container, false);
 
-        auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-        logoutBtn = view.findViewById(R.id.adminLogoutBtn);
-        manageUsersBtn = view.findViewById(R.id.btnManageUsers);
-        moderateEventsBtn = view.findViewById(R.id.btnModerateEvents);
-        reviewPaymentsBtn = view.findViewById(R.id.btnReviewPayments);
-        usersCount = view.findViewById(R.id.adminUsersCount);
-        eventsCount = view.findViewById(R.id.adminEventsCount);
-        ticketsCount = view.findViewById(R.id.adminTicketsCount);
-        revenueCount = view.findViewById(R.id.adminRevenueCount);
 
-        logoutBtn.setOnClickListener(v -> logoutAdmin());
-        manageUsersBtn.setOnClickListener(v -> switchTab(R.id.nav_admin_users));
-        moderateEventsBtn.setOnClickListener(v -> switchTab(R.id.nav_admin_events));
-        reviewPaymentsBtn.setOnClickListener(v -> switchTab(R.id.nav_admin_payments));
+        tvUsers = view.findViewById(R.id.tvAdminUsers);
+        tvClubs = view.findViewById(R.id.tvAdminClubs);
+        tvEvents = view.findViewById(R.id.tvAdminEvents);
+        tvRegistrations = view.findViewById(R.id.tvAdminRegistrations);
+        tvStatus = view.findViewById(R.id.tvAdminHomeStatus);
 
         loadStats();
         return view;
@@ -63,47 +47,86 @@ public class AdminHomeFragment extends Fragment {
         loadStats();
     }
 
-    private void switchTab(int itemId) {
-        if (getActivity() instanceof AdminActivity) {
-            ((AdminActivity) getActivity()).selectTab(itemId);
-        }
+    private void setStatus(String text) {
+        if (tvStatus != null) tvStatus.setText(text != null ? text : "");
     }
 
     private void loadStats() {
-        db.collection("users").get()
-                .addOnSuccessListener(snapshot -> usersCount.setText(String.valueOf(snapshot.size())));
+        setStatus("Loading...");
+        loadCount("users", tvUsers);
+        loadClubsCount();
+        loadCount("events", tvEvents);
+        loadCount("tickets", tvRegistrations);
+    }
 
-        db.collection("events").get()
-                .addOnSuccessListener(snapshot -> eventsCount.setText(String.valueOf(snapshot.size())));
+    private void loadClubsCount() {
+        if (tvClubs == null) return;
+        tvClubs.setText("0");
 
-        db.collection("tickets").get()
-                .addOnSuccessListener(snapshot -> ticketsCount.setText(String.valueOf(snapshot.size())));
-
-        db.collection("tickets").get()
-                .addOnSuccessListener(snapshot -> {
-                    long paidCount = 0;
-                    for (int i = 0; i < snapshot.getDocuments().size(); i++) {
-                        String paymentId = snapshot.getDocuments().get(i).getString("paymentId");
-                        if (paymentId != null && !paymentId.equals("FREE_TICKET")) {
-                            paidCount++;
-                        }
+        db.collection("clubs")
+                .count()
+                .get(AggregateSource.SERVER)
+                .addOnSuccessListener(snap -> {
+                    if (!isAdded()) return;
+                    long count = snap.getCount();
+                    if (count > 0) {
+                        tvClubs.setText(String.valueOf(count));
+                        setStatus("");
+                        return;
                     }
-                    revenueCount.setText("₹" + paidCount);
+                    // Legacy fallback: clubs stored on leader user docs.
+                    db.collection("users").whereEqualTo("role", "leader").get()
+                            .addOnSuccessListener(s -> {
+                                if (!isAdded()) return;
+                                tvClubs.setText(String.valueOf(s.size()));
+                                setStatus("");
+                            })
+                            .addOnFailureListener(e -> {
+                                if (!isAdded()) return;
+                                tvClubs.setText("0");
+                                setStatus("");
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    db.collection("users").whereEqualTo("role", "leader").get()
+                            .addOnSuccessListener(s -> {
+                                if (!isAdded()) return;
+                                tvClubs.setText(String.valueOf(s.size()));
+                                setStatus("");
+                            })
+                            .addOnFailureListener(ex -> {
+                                if (!isAdded()) return;
+                                tvClubs.setText("-");
+                                setStatus("Some counts failed to load.");
+                            });
                 });
     }
 
-    private void logoutAdmin() {
-        auth.signOut();
+    private void loadCount(String collection, TextView target) {
+        if (target == null) return;
+        target.setText("0");
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build();
-        GoogleSignInClient googleClient = GoogleSignIn.getClient(requireContext(), gso);
-
-        googleClient.signOut().addOnCompleteListener(task -> {
-            Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(requireContext(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            requireActivity().finish();
-        });
+        db.collection(collection)
+                .count()
+                .get(AggregateSource.SERVER)
+                .addOnSuccessListener((AggregateQuerySnapshot snap) -> {
+                    if (!isAdded()) return;
+                    target.setText(String.valueOf(snap.getCount()));
+                    setStatus("");
+                })
+                .addOnFailureListener(e -> {
+                    // Fallback for older SDK behavior or security rules: do a full get.
+                    db.collection(collection).get()
+                            .addOnSuccessListener(s -> {
+                                if (!isAdded()) return;
+                                target.setText(String.valueOf(s.size()));
+                                setStatus("");
+                            })
+                            .addOnFailureListener(ex -> {
+                                if (!isAdded()) return;
+                                target.setText("-");
+                                setStatus("Some counts failed to load.");
+                            });
+                });
     }
 }
