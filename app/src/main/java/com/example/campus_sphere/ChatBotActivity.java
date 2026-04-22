@@ -32,8 +32,8 @@ import java.io.IOException;
 
 public class ChatBotActivity extends AppCompatActivity {
 
-    private static final String AI_URL = "https://fkiahnsldyerpyijxsyn.supabase.co/functions/v1/campus-ai";
-    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZraWFobnNsZHllcnB5aWp4c3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MjUxMzcsImV4cCI6MjA4MTQwMTEzN30.UMev844BDXHKfBeJZ2iStpabTkY4gC-Eh8sgvqZWZJw";
+    private static final String AI_URL = BuildConfig.SUPABASE_URL + "/functions/v1/campus-ai";
+    private static final String SUPABASE_ANON_KEY = BuildConfig.SUPABASE_ANON_KEY;
 
     private RecyclerView recyclerView;
     private EditText messageInput;

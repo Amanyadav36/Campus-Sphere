@@ -104,7 +104,7 @@ public class AdminCreateClubActivity extends AppCompatActivity {
         } catch (IllegalStateException e) {
             try {
                 Map<String, Object> config = new HashMap<>();
-                config.put("cloud_name", "dpadbarxt");
+                config.put("cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME);
                 config.put("secure", true);
                 MediaManager.init(getApplicationContext(), config);
             } catch (Exception ex) {

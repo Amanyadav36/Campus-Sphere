@@ -28,15 +28,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // --- 1. RAZORPAY OPTIMIZATION (New) ---
-        // Pre-loading makes the payment window open much faster later.
+        // --- 1. RAZORPAY OPTIMIZATION ---
         Checkout.preload(getApplicationContext());
-        // --------------------------------------
 
         // --- 2. CLOUDINARY SAFE INIT ---
         try {
             Map<String, Object> config = new HashMap<>();
-            config.put("cloud_name", "dpadbarxt");
+            config.put("cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME);
             config.put("secure", true);
             MediaManager.init(getApplicationContext(), config);
         } catch (IllegalStateException e) {

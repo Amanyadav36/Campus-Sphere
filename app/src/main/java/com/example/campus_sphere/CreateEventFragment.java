@@ -50,8 +50,8 @@ import java.util.concurrent.Executors;
 
 public class CreateEventFragment extends Fragment {
 
-    // 🔴 REPLACE WITH YOUR REAL KEY
-    private static final String GEMINI_API_KEY = "AIzaSyCUG7pqqCGSgvhOYcCm05DAZ883G6KFp3U";
+    // Removed hardcoded key
+    private static final String GEMINI_API_KEY = BuildConfig.GEMINI_API_KEY;
 
     private ImageView eventPosterPreview;
     private EditText titleInput, descInput, categoryInput, priceInput, dateInput, timeInput;
@@ -141,7 +141,7 @@ public class CreateEventFragment extends Fragment {
             // If not, initialize it now
             try {
                 Map<String, Object> config = new HashMap<>();
-                config.put("cloud_name", "dpadbarxt");
+                config.put("cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME);
                 config.put("secure", true);
                 MediaManager.init(requireContext(), config);
             } catch (Exception ex) {

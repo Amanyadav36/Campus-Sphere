@@ -31,7 +31,8 @@ import java.util.Map;
 
 public class UserDetailsActivity extends AppCompatActivity {
 
-    private static final String CLOUD_NAME = "dpadbarxt";
+    // Removed hardcoded Cloudinary credentials
+    private static final String CLOUD_NAME = BuildConfig.CLOUDINARY_CLOUD_NAME;
     private static final String UPLOAD_PRESET = "campus_sphere_preset";
 
     // UI Elements
